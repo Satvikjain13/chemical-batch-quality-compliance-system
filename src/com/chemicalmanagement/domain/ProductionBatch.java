@@ -32,7 +32,7 @@ public class ProductionBatch {
     }
 
     //getters
-    public String getbatchNumber(){
+    public String getBatchNumber(){
         return batchNumber;
     }
 
