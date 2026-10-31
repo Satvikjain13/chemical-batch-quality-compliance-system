@@ -1,17 +1,18 @@
 package com.chemicalmanagement.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ProductionBatch {
     private final String batchNumber;
     private final Chemical chemical;
     private final LocalDate manufacturingDate;
-    private double quantity;
+    private final BigDecimal quantity;
     private QualityStatus qualityStatus;
     private BatchStatus batchStatus;
 
     //constructors
-    public ProductionBatch(String batchNumber,Chemical chemical,LocalDate manufacturingDate,double quantity){
+    public ProductionBatch(String batchNumber,Chemical chemical,LocalDate manufacturingDate,BigDecimal quantity){
         if(batchNumber == null || batchNumber.isBlank()){
             throw new IllegalArgumentException("Batch number cannot be empty or blank.");
         }
@@ -21,8 +22,8 @@ public class ProductionBatch {
         if(manufacturingDate == null || manufacturingDate.isAfter(LocalDate.now())){
             throw new IllegalArgumentException("\"Manufacturing date cannot be null or in the future.");
         }
-        if(quantity <= 0 ||!Double.isFinite(quantity)){
-            throw new IllegalArgumentException("Quantity must be a finite number greater than zero.");
+        if(quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0){
+            throw new IllegalArgumentException("Quantity should not be null and greater than zero.");
         }
 
         this.batchNumber=batchNumber;
@@ -46,7 +47,7 @@ public class ProductionBatch {
         return manufacturingDate;
     }
 
-    public double getQuantity(){
+    public BigDecimal getQuantity(){
         return quantity;
     }
 
@@ -60,14 +61,6 @@ public class ProductionBatch {
 
     public LocalDate getExpiryDate(){
         return manufacturingDate.plusDays(chemical.getShelfLifeDays());
-    }
-
-    //setters
-    public void setQuantity(double quantity){
-        if(quantity < 0 ||!Double.isFinite(quantity)){
-            throw new IllegalArgumentException("Quantity must be a finite number greater than zero.");
-        }
-        this.quantity = quantity;
     }
 
     public void completeQualityEvaluation(QualityStatus evaluationOutcome){

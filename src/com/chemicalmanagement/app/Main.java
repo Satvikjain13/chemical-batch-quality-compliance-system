@@ -3,6 +3,7 @@ package com.chemicalmanagement.app;
 import com.chemicalmanagement.domain.*;
 import com.chemicalmanagement.service.QualityControlService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +21,17 @@ public class Main {
             ProductionBatch batch1 = new ProductionBatch("BATCH-001",
                     chemical,
                     LocalDate.of(2026,10,24),
-                    500);
+                    new BigDecimal("500"));
 
             ProductionBatch batch2 = new ProductionBatch("BATCH-002",
                     chemical,
                     LocalDate.of(2026,10,30),
-                    1000);
+                    new BigDecimal("1000"));
 
             ProductionBatch batch3 = new ProductionBatch("BATCH-003",
                     chemical,
                     LocalDate.of(2026,10,31),
-                    800);
+                    new BigDecimal("800"));
 
 //            System.out.println("Batch created successfully.");
 //            System.out.println("Batch number : "+batch.getBatchNumber());
@@ -112,7 +113,7 @@ public class Main {
             QualityTestResult resultBatchDensity3 = new QualityTestResult("QTR-009",
                     batch3,
                     density,
-                    2);
+                    0);
 
             //Store all QualityTests
             List<QualityTest> requiredTests = new ArrayList<>();
@@ -136,6 +137,7 @@ public class Main {
             List<QualityTestResult> resultsBatch3 = new ArrayList<>();
             resultsBatch3.add(resultBatchPurity3);
             resultsBatch3.add(resultBatchViscosity3);
+            resultsBatch3.add(resultBatchDensity3);
 
 
             //Evaluate the batch quality
@@ -157,6 +159,53 @@ public class Main {
             }
             System.out.println("Batch2 After: "+batch2.getBatchStatus());
             System.out.println("Batch3 After: " + batch3.getBatchStatus());
+
+            Inventory inventory1 = new Inventory("INV-001",
+                    batch2);
+
+//            inventory1.reserveQuantity(new BigDecimal("300"));
+//            System.out.println("-----------------------------------------------");
+//            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
+//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+//            System.out.println("ReservedQuantity: "+inventory1.getReservedQuantity());
+
+//            inventory1.releaseReservedQuantity(new BigDecimal("100"));
+//            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
+//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+//            System.out.println("ReservedQuantity: "+inventory1.getReservedQuantity());
+//
+//            inventory1.releaseReservedQuantity(new BigDecimal("300"));
+//            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
+//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+//            System.out.println("ReservedQuantity: "+inventory1.getReservedQuantity());
+
+//            inventory1.dispatchQuantity(new BigDecimal("200"));
+//            System.out.println("Dispatch Quantity: "+inventory1.getDispatchedQuantity());
+//            System.out.println("Reserve Quantity: "+inventory1.getReservedQuantity());
+//            inventory1.releaseReservedQuantity(new BigDecimal("50"));
+//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+//            System.out.println("Reserve Quantity: "+inventory1.getReservedQuantity());
+//            try{
+//                inventory1.dispatchQuantity(new BigDecimal("100"));
+//            }catch(IllegalStateException e){
+//                System.out.println(e.getMessage());
+//            }
+            System.out.println("--------------------------------------");
+            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
+            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+            inventory1.reserveQuantity(new BigDecimal("400"));
+            System.out.println("Reserved Quantity: "+inventory1.getReservedQuantity());
+            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+            inventory1.dispatchQuantity(new BigDecimal("150"));
+            System.out.println("Dispatch Quantity: "+inventory1.getDispatchedQuantity());
+            System.out.println("Reserved Quantity: "+inventory1.getReservedQuantity());
+            inventory1.releaseReservedQuantity(new BigDecimal("100"));
+            System.out.println("Release Quantity: "+inventory1.getReservedQuantity());
+            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+            inventory1.recordDamageFromAvailable(new BigDecimal("50"));
+            System.out.println("Damaged Quantity: "+inventory1.getDamagedQuantity());
+            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+
 
 
         }catch(IllegalArgumentException e){
