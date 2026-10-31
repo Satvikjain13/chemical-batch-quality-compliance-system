@@ -8,6 +8,7 @@ public class ProductionBatch {
     private final LocalDate manufacturingDate;
     private double quantity;
     private QualityStatus qualityStatus;
+    private BatchStatus batchStatus;
 
     //constructors
     public ProductionBatch(String batchNumber,Chemical chemical,LocalDate manufacturingDate,double quantity){
@@ -29,6 +30,7 @@ public class ProductionBatch {
         this.manufacturingDate=manufacturingDate;
         this.quantity=quantity;
         this.qualityStatus=QualityStatus.PENDING;
+        this.batchStatus=BatchStatus.IN_PRODUCTION;
     }
 
     //getters
@@ -52,6 +54,10 @@ public class ProductionBatch {
         return qualityStatus;
     }
 
+    public BatchStatus getBatchStatus(){
+        return batchStatus;
+    }
+
     public LocalDate getExpiryDate(){
         return manufacturingDate.plusDays(chemical.getShelfLifeDays());
     }
@@ -64,9 +70,33 @@ public class ProductionBatch {
         this.quantity = quantity;
     }
 
-    public void setQualityStatus(QualityStatus qualityStatus){
-        if (qualityStatus == null) {
-            throw new IllegalArgumentException("Quality status cannot be null.");}
-        this.qualityStatus = qualityStatus;
+    public void completeQualityEvaluation(QualityStatus evaluationOutcome){
+        if (evaluationOutcome == null) {
+            throw new IllegalArgumentException(
+                    "Evaluation outcome cannot be null"
+            );
+        }
+
+        if(this.batchStatus == BatchStatus.QUARANTINED){
+            throw new IllegalStateException("Quarantine Batch cannot be Evaluate Again");
+        }
+
+        if(this.batchStatus == BatchStatus.APPROVED){
+            throw new IllegalStateException("Approved Batch cannot be Evaluated Again");
+        }
+
+        if(evaluationOutcome == QualityStatus.FAILED){
+            this.qualityStatus = QualityStatus.FAILED;
+            this.batchStatus = BatchStatus.QUARANTINED;
+        }else if(evaluationOutcome == QualityStatus.PENDING){
+            this.qualityStatus = QualityStatus.PENDING;
+            this.batchStatus = BatchStatus.QUALITY_PENDING;
+        }else {
+            this.qualityStatus = QualityStatus.PASSED;
+            this.batchStatus = BatchStatus.APPROVED;
+        }
+
+
     }
+
 }

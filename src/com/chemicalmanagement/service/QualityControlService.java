@@ -18,12 +18,13 @@ public class QualityControlService {
 
         if(requiredTests == null || requiredTests.isEmpty()){
             throw new IllegalArgumentException("Required Tests cannot be Empty or Null ");
-        }
+            }
 
         if(results == null){
             throw new IllegalArgumentException("Results cannot be null.");
         }
         // Track test failures and completion
+        QualityStatus evaluationOutcome;
         boolean hasFailedTest = false;
         boolean allTestsCompleted = true;
 
@@ -47,15 +48,13 @@ public class QualityControlService {
                 allTestsCompleted = false;
             }
         }
-
-        // Set the final batch statu
         if(hasFailedTest){
-            batch.setQualityStatus(QualityStatus.FAILED);
+            evaluationOutcome = QualityStatus.FAILED;
         }else if(!allTestsCompleted){
-            batch.setQualityStatus(QualityStatus.PENDING);
+            evaluationOutcome = QualityStatus.PENDING;
         }else{
-            batch.setQualityStatus(QualityStatus.PASSED);
+            evaluationOutcome = QualityStatus.PASSED;
         }
-
+        batch.completeQualityEvaluation(evaluationOutcome);
     }
 }
