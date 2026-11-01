@@ -207,6 +207,19 @@ public class Main {
             System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
 
 
+            Customer customer = new Customer("CUST-001",
+                    "ABC Chemicals",
+                    "9039779122",
+                    null,
+                    "Indore");
+
+            System.out.println("---------------Customer Information---------------------------");
+            System.out.println("Customer Id: "+customer.getCustomerId());
+            System.out.println("Customer Name: "+customer.getCustomerName());
+            System.out.println("Customer ContactNumber:  "+customer.getContactNumber());
+            System.out.println("Customer Email: "+customer.getEmail());
+            System.out.println("Customer Address: "+customer.getAddress());
+            System.out.println("Customer Status: "+customer.getCustomerStatus());
 
         }catch(IllegalArgumentException e){
             System.out.println("Registration Fails " + e.getMessage());
