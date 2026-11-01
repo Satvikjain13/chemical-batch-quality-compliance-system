@@ -210,16 +210,30 @@ public class Main {
             Customer customer = new Customer("CUST-001",
                     "ABC Chemicals",
                     "9039779122",
-                    null,
+                    "satvik@gmail.com",
                     "Indore");
 
-            System.out.println("---------------Customer Information---------------------------");
-            System.out.println("Customer Id: "+customer.getCustomerId());
-            System.out.println("Customer Name: "+customer.getCustomerName());
-            System.out.println("Customer ContactNumber:  "+customer.getContactNumber());
-            System.out.println("Customer Email: "+customer.getEmail());
-            System.out.println("Customer Address: "+customer.getAddress());
-            System.out.println("Customer Status: "+customer.getCustomerStatus());
+            CustomerOrder order1 = new CustomerOrder("ORD-001",
+                    customer,
+                    chemical,
+                    new BigDecimal("500"));
+
+            System.out.println("-----------------------Order Details-----------------------------------");
+            System.out.println("Order Id: "+order1.getOrderId());
+            System.out.println("Customer Name: "+order1.getCustomer().getCustomerName());
+            System.out.println("Chemical Name: "+order1.getChemical().getName());
+            System.out.println("Order Quantity: "+order1.getOrderQuantity());
+            System.out.println("Order Date: "+order1.getOrderDate());
+            System.out.println("Order Status: "+order1.getOrderStatus());
+            System.out.println("Order Name At: "+order1.getCustomerNameAtOrder());
+            System.out.println("Order Contact At: "+order1.getCustomerContactAtOrder());
+            System.out.println("Order Email At: "+order1.getCustomerEmailAtOrder());
+            System.out.println("Order Address At: "+order1.getCustomerAddressAtOrder());
+
+            customer.setContactNumber("9123456780");
+            System.out.println("Customer Current Contact: "+customer.getContactNumber());
+            System.out.println("Order Historical Contact: "+order1.getCustomerContactAtOrder());
+
 
         }catch(IllegalArgumentException e){
             System.out.println("Registration Fails " + e.getMessage());
