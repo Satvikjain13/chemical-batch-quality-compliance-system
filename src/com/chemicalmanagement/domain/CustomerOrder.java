@@ -26,7 +26,7 @@ public class CustomerOrder {
             throw new IllegalArgumentException("Customer cannot be null.");
         }
         if(chemical == null){
-            throw new IllegalArgumentException("Chemical cannotbe null.");
+            throw new IllegalArgumentException("Chemical cannot be null.");
         }
         if(orderQuantity == null || orderQuantity.compareTo(BigDecimal.ZERO) <= 0){
             throw new IllegalArgumentException("OrderQuantity cannot be null or should be greater than 0");
@@ -81,6 +81,45 @@ public class CustomerOrder {
 
     public String getCustomerAddressAtOrder() {
         return customerAddressAtOrder;
+    }
+
+    public void markAsValidated(){
+        if(this.orderStatus != OrderStatus.CREATED){
+            throw new IllegalStateException("Only CREATED orders can be VALIDATED.");
+        }
+        this.orderStatus = OrderStatus.VALIDATED;
+    }
+
+    public void markAsReserved(){
+        if(this.orderStatus != OrderStatus.VALIDATED){
+            throw new IllegalStateException("Only VALIDATED orders can be RESERVED.");
+        }
+        this.orderStatus = OrderStatus.RESERVED;
+    }
+
+    public void markAsRejected(){
+        if (this.orderStatus != OrderStatus.CREATED && this.orderStatus != OrderStatus.VALIDATED) {
+            throw new IllegalStateException("Only CREATED or VALIDATED orders can be REJECTED."
+            );
+        }
+        this.orderStatus = OrderStatus.REJECTED;
+    }
+
+    public void markAsDispatched(){
+        if(this.orderStatus != OrderStatus.RESERVED){
+            throw new IllegalStateException("Only RESERVED orders can be DISPATCHED.");
+        }
+        this.orderStatus = OrderStatus.DISPATCHED;
+    }
+
+    public void markAsCancelled(){
+        if (this.orderStatus != OrderStatus.CREATED &&
+                this.orderStatus != OrderStatus.VALIDATED &&
+                this.orderStatus != OrderStatus.RESERVED) {
+            throw new IllegalStateException("Only CREATED, VALIDATED or RESERVED orders can be CANCELLED."
+            );
+        }
+        this.orderStatus = OrderStatus.CANCELLED;
     }
 
 }
