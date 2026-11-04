@@ -1,6 +1,7 @@
 package com.chemicalmanagement.app;
 
 import com.chemicalmanagement.domain.*;
+import com.chemicalmanagement.service.OrderService;
 import com.chemicalmanagement.service.QualityControlService;
 
 import java.math.BigDecimal;
@@ -17,6 +18,11 @@ public class Main {
                     "Litres",
                     365);
 
+            Chemical chemical2 = new Chemical("CHEM-002",
+                    "Hydrochloric Acid",
+                            "Litres",
+                    180);
+
             //create a Production Batch
             ProductionBatch batch1 = new ProductionBatch("BATCH-001",
                     chemical,
@@ -32,6 +38,11 @@ public class Main {
                     chemical,
                     LocalDate.of(2026,10,31),
                     new BigDecimal("800"));
+
+            ProductionBatch hydBatch1 = new ProductionBatch("BATCH-004",
+                    chemical2,
+                    LocalDate.of(2026,11,02),
+                    new BigDecimal("1000"));
 
 //            System.out.println("Batch created successfully.");
 //            System.out.println("Batch number : "+batch.getBatchNumber());
@@ -115,6 +126,24 @@ public class Main {
                     density,
                     0);
 
+            //Record QualityTest Hydrochloric Batch1 Result
+            QualityTestResult resultHydBatchPurity1= new QualityTestResult("QTR-010",
+                    hydBatch1,
+                    purityTest,
+                    96);
+
+            QualityTestResult resultHydBatchViscocity1 = new QualityTestResult("QTR-011",
+                    hydBatch1,
+                    viscosity,
+                    12);
+
+            QualityTestResult resultHydBatchDensity1= new QualityTestResult("QTR-012",
+                    hydBatch1,
+                    density,
+                    1);
+
+
+
             //Store all QualityTests
             List<QualityTest> requiredTests = new ArrayList<>();
             requiredTests.add(purityTest);
@@ -139,17 +168,25 @@ public class Main {
             resultsBatch3.add(resultBatchViscosity3);
             resultsBatch3.add(resultBatchDensity3);
 
+            //Store all QualityTests ResultHydBatch1
+            List<QualityTestResult> resultHydBatch1 = new ArrayList<>();
+            resultHydBatch1.add(resultHydBatchPurity1);
+            resultHydBatch1.add(resultHydBatchViscocity1);
+            resultHydBatch1.add(resultHydBatchDensity1);
+
 
             //Evaluate the batch quality
             QualityControlService service = new QualityControlService();
             service.evaluateBatch(batch1,requiredTests,resultsBatch1);
             service.evaluateBatch(batch2,requiredTests,resultsBatch2);
             service.evaluateBatch(batch3,requiredTests,resultsBatch3);
+            service.evaluateBatch(hydBatch1,requiredTests,resultHydBatch1);
 
             //display the final quality status
             System.out.println("Batch1: "+batch1.getBatchStatus());
             System.out.println("Batch2: "+batch2.getBatchStatus());
             System.out.println("Batch3: "+batch3.getBatchStatus());
+            System.out.println("hydBatch1: "+hydBatch1.getBatchStatus());
 
             try{
                 batch2.completeQualityEvaluation(QualityStatus.PASSED);
@@ -218,6 +255,11 @@ public class Main {
                     chemical,
                     new BigDecimal("500"));
 
+            CustomerOrder order2 = new CustomerOrder("ORD-002",
+                    customer,
+                    chemical2,
+                    new BigDecimal("1500"));
+
             System.out.println("-----------------------Order Details-----------------------------------");
             System.out.println("Order Id: "+order1.getOrderId());
             System.out.println("Customer Name: "+order1.getCustomer().getCustomerName());
@@ -233,6 +275,42 @@ public class Main {
             customer.setContactNumber("9123456780");
             System.out.println("Customer Current Contact: "+customer.getContactNumber());
             System.out.println("Order Historical Contact: "+order1.getCustomerContactAtOrder());
+
+//            //Active and Created and also Validated to Validated check
+//            OrderService service1 = new OrderService();
+//            System.out.println(order1.getOrderStatus());
+//            service1.validateOrder(order1);
+//            System.out.println(order1.getOrderStatus());
+//            service1.validateOrder(order1);
+//            System.out.println(order1.getOrderStatus());
+
+            //When Customer is Inactive and null
+            OrderService service2 = new OrderService();
+            System.out.println(order2.getOrderStatus());
+            customer.setCustomerStatus(CustomerStatus.INACTIVE);
+//            try{
+//                service2.validateOrder(order2);
+//            }catch(IllegalStateException e){
+//                System.out.println(e.getMessage());
+//            }
+//            service2.validateOrder(null);
+//            System.out.println(order2.getOrderStatus());
+
+            Reservation reservation1 = new Reservation("RES-001",
+                    order1,
+                    inventory1,
+                    new BigDecimal("500"));
+
+//            System.out.println("-----------------------------------------");
+//            System.out.println(reservation1.getReservationStatus());
+//            reservation1.markAsReleased();
+//            System.out.println(reservation1.getReservationStatus());
+//            reservation1.markAsDispatched();
+//            System.out.println(reservation1.getReservationStatus());
+
+
+
+
 
 
         }catch(IllegalArgumentException e){
