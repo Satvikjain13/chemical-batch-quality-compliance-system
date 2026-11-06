@@ -7,7 +7,9 @@ import com.chemicalmanagement.service.QualityControlService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
@@ -54,103 +56,107 @@ public class Main {
 
 
 
-            //Define required Quality Test
-            QualityTest purityTest = new QualityTest("QT-001",
+            //Define Sulphuric Acid  required Quality Test
+            QualityTest sulphuricPurity = new QualityTest("SQT-001",
                     "Purity",
                     95.0,
                     100.0,
                     "%");
 
-            QualityTest viscosity = new QualityTest("QT-002",
+            QualityTest sulphuricViscosity = new QualityTest("SQT-002",
                     "Viscosity",
                     10,
                     20,
-                    "%");
+                    "cP");
 
-            QualityTest density = new QualityTest("QT-003",
+            QualityTest sulphuricDensity = new QualityTest("SQT-003",
                     "Density",
                     0,
                     1,
+                    "g/cm3");
+
+            //Define Hydrochloric Acid  required Quality Test
+            QualityTest hydrochloricPurity = new QualityTest("HQT-004",
+                    "Purity",
+                    99,
+                    100,
                     "%");
 
-//            System.out.println("----------------------------------");
-//            System.out.println("Test ID: "+purityTest.getTestId());
-//            System.out.println("Test Name: "+purityTest.getTestName());
-//            System.out.println("Test MinimumAcceptableValue: "+purityTest.getMinimumAcceptableValue());
-//            System.out.println("Test MaximumAcceptableValue: "+purityTest.getMaximumAcceptableValue());
-//            System.out.println("Test Unit: "+purityTest.getUnit());
+            QualityTest hydrochloricDensity = new QualityTest("HQT-005",
+                    "Density",
+                    0.1,
+                    0.5,
+                    "g/cm3");
+
+            //Store all of Sulphuric Acid QualityTests
+            List<QualityTest> sulphuricTests = new ArrayList<>();
+            sulphuricTests.add(sulphuricPurity);
+            sulphuricTests.add(sulphuricViscosity);
+            sulphuricTests.add(sulphuricDensity);
+
+            //Store all of Hydrochloric  Acid QualityTests
+            List<QualityTest> hydrochloricTests = new ArrayList<>();
+            hydrochloricTests.add(hydrochloricPurity);
+            hydrochloricTests.add(hydrochloricDensity);
 
             //Record QualityTest Batch1 Result
             QualityTestResult resultBatchPurity1 = new QualityTestResult("QTR-001",
                     batch1,
-                    purityTest,
+                    sulphuricPurity,
                     91);
             QualityTestResult resultBatchViscosity1 = new QualityTestResult("QTR-002",
                     batch1,
-                    viscosity,
+                    sulphuricViscosity,
                     12);
             QualityTestResult resultBatchDensity1= new QualityTestResult("QTR-003",
                     batch1,
-                    density,
+                    sulphuricDensity,
                     1);
 
             //Record QualityTest Batch2 Result
             QualityTestResult resultBatchPurity2 = new QualityTestResult("QTR-004",
                     batch2,
-                    purityTest,
+                    sulphuricPurity,
                     96);
 
             QualityTestResult resultBatchViscosity2 = new QualityTestResult("QTR-005",
                     batch2,
-                    viscosity,
+                    sulphuricViscosity,
                     12);
 
             QualityTestResult resultBatchDensity2= new QualityTestResult("QTR-006",
                     batch2,
-                    density,
+                    sulphuricDensity,
                     1);
 
             //Record QualityTest Batch3 Result
             QualityTestResult resultBatchPurity3 = new QualityTestResult("QTR-007",
                     batch3,
-                    purityTest,
+                    sulphuricPurity,
                     95);
 
             QualityTestResult resultBatchViscosity3 = new QualityTestResult("QTR-008",
                     batch3,
-                    viscosity,
+                    sulphuricViscosity,
                     16);
 
             QualityTestResult resultBatchDensity3 = new QualityTestResult("QTR-009",
                     batch3,
-                    density,
+                    sulphuricDensity,
                     0);
 
             //Record QualityTest Hydrochloric Batch1 Result
             QualityTestResult resultHydBatchPurity1= new QualityTestResult("QTR-010",
                     hydBatch1,
-                    purityTest,
-                    96);
-
-            QualityTestResult resultHydBatchViscocity1 = new QualityTestResult("QTR-011",
-                    hydBatch1,
-                    viscosity,
-                    12);
+                    hydrochloricPurity,
+                    99);
 
             QualityTestResult resultHydBatchDensity1= new QualityTestResult("QTR-012",
                     hydBatch1,
-                    density,
-                    1);
+                    hydrochloricDensity,
+                    0.2);
 
-
-
-            //Store all QualityTests
-            List<QualityTest> requiredTests = new ArrayList<>();
-            requiredTests.add(purityTest);
-            requiredTests.add(viscosity);
-            requiredTests.add(density);
-
-            //Store all QualityTests ResultBatch1
+//Store all QualityTests ResultBatch1
             List<QualityTestResult> resultsBatch1 = new ArrayList<>();
             resultsBatch1.add(resultBatchPurity1);
             resultsBatch1.add(resultBatchViscosity1);
@@ -171,22 +177,45 @@ public class Main {
             //Store all QualityTests ResultHydBatch1
             List<QualityTestResult> resultHydBatch1 = new ArrayList<>();
             resultHydBatch1.add(resultHydBatchPurity1);
-            resultHydBatch1.add(resultHydBatchViscocity1);
             resultHydBatch1.add(resultHydBatchDensity1);
 
 
-            //Evaluate the batch quality
-            QualityControlService service = new QualityControlService();
-            service.evaluateBatch(batch1,requiredTests,resultsBatch1);
-            service.evaluateBatch(batch2,requiredTests,resultsBatch2);
-            service.evaluateBatch(batch3,requiredTests,resultsBatch3);
-            service.evaluateBatch(hydBatch1,requiredTests,resultHydBatch1);
+            //Creating Profiles of a Chemical1
+            ChemicalQualityProfile sulphuricProfile = new ChemicalQualityProfile(chemical,
+                    sulphuricTests);
 
-            //display the final quality status
-            System.out.println("Batch1: "+batch1.getBatchStatus());
-            System.out.println("Batch2: "+batch2.getBatchStatus());
-            System.out.println("Batch3: "+batch3.getBatchStatus());
-            System.out.println("hydBatch1: "+hydBatch1.getBatchStatus());
+            //Creating Profiles of a Chemical2
+            ChemicalQualityProfile hydrochloricProfile = new ChemicalQualityProfile(chemical2,
+                    hydrochloricTests);
+
+            Map<String,ChemicalQualityProfile> profileRegistry = new HashMap<>();
+            profileRegistry.put(chemical.getChemicalId(),sulphuricProfile);
+            profileRegistry.put(chemical2.getChemicalId(),hydrochloricProfile);
+
+            QualityControlService service = new QualityControlService();
+
+//            System.out.println("----------------------------------");
+//            System.out.println("Test ID: "+purityTest.getTestId());
+//            System.out.println("Test Name: "+purityTest.getTestName());
+//            System.out.println("Test MinimumAcceptableValue: "+purityTest.getMinimumAcceptableValue());
+//            System.out.println("Test MaximumAcceptableValue: "+purityTest.getMaximumAcceptableValue());
+//            System.out.println("Test Unit: "+purityTest.getUnit());
+
+
+            //Evaluate the batch quality
+            System.out.println("---------------------------------------");
+            evaluateBatchUsingProfile(
+                    batch1, resultsBatch1, profileRegistry, service);
+
+            evaluateBatchUsingProfile(
+                    batch2, resultsBatch2, profileRegistry, service);
+
+            evaluateBatchUsingProfile(
+                    batch3, resultsBatch3, profileRegistry, service);
+
+            evaluateBatchUsingProfile(
+                    hydBatch1, resultHydBatch1, profileRegistry, service);
+
 
             try{
                 batch2.completeQualityEvaluation(QualityStatus.PASSED);
@@ -197,6 +226,7 @@ public class Main {
             System.out.println("Batch2 After: "+batch2.getBatchStatus());
             System.out.println("Batch3 After: " + batch3.getBatchStatus());
 
+            //Inventory
             Inventory inventory1 = new Inventory("INV-001",
                     batch2);
 
@@ -318,5 +348,27 @@ public class Main {
         }
 
 
+    }
+    private static void evaluateBatchUsingProfile(
+            ProductionBatch batch,
+            List<QualityTestResult> results,
+            Map<String, ChemicalQualityProfile> profileRegistry,
+            QualityControlService service) {
+        // Get chemical ID from the batch
+        String chemicalId = batch.getChemical().getChemicalId();
+        // Retrieve the correct chemical profile
+        ChemicalQualityProfile profile = profileRegistry.get(chemicalId);
+        // Check whether profile exists
+        if (profile == null) {
+            throw new IllegalStateException(
+                    "No quality profile found for: " + chemicalId);
+        }
+        // Get required tests from profile
+        List<QualityTest> requiredTests = profile.getRequiredTests();
+        // Evaluate batch
+        service.evaluateBatch(batch, requiredTests, results);
+        // Display result
+        System.out.println(
+                batch.getBatchNumber() + ": " + batch.getBatchStatus());
     }
 }
