@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface ReservationRepository {
     void save(Reservation reservation);
     Optional<Reservation> findById(String reservationId);
-    List<Reservation> findByOrderById(String orderId);
+    List<Reservation> findByOrderId(String orderId);
     List<Reservation> findAll();
     boolean existsById(String reservationId);
 }

@@ -16,7 +16,7 @@ public class InMemoryInventoryRepository implements InventoryRepository {
             throw new IllegalArgumentException("Inventory cannot be null.");
         }
         if(inventoryMap.containsKey(inventory.getInventoryId())){
-            throw new IllegalArgumentException("Duplicate inventory ID is not allowed.");
+            throw new IllegalArgumentException("Inventory with ID " + inventory.getInventoryId() + " already exists.");
         }
         inventoryMap.put(inventory.getInventoryId(),inventory);
     }

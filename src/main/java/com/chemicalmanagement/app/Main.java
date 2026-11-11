@@ -1,15 +1,13 @@
 package com.chemicalmanagement.app;
 
 import com.chemicalmanagement.domain.*;
+import com.chemicalmanagement.repository.InMemoryInventoryRepository;
 import com.chemicalmanagement.service.OrderService;
 import com.chemicalmanagement.service.QualityControlService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -103,7 +101,7 @@ public class Main {
             QualityTestResult resultBatchPurity1 = new QualityTestResult("QTR-001",
                     batch1,
                     sulphuricPurity,
-                    91);
+                    95);
             QualityTestResult resultBatchViscosity1 = new QualityTestResult("QTR-002",
                     batch1,
                     sulphuricViscosity,
@@ -149,7 +147,7 @@ public class Main {
             QualityTestResult resultHydBatchPurity1= new QualityTestResult("QTR-010",
                     hydBatch1,
                     hydrochloricPurity,
-                    99);
+                    95);
 
             QualityTestResult resultHydBatchDensity1= new QualityTestResult("QTR-012",
                     hydBatch1,
@@ -228,7 +226,13 @@ public class Main {
 
             //Inventory
             Inventory inventory1 = new Inventory("INV-001",
+                    batch1);
+
+            Inventory inventory2 = new Inventory("INV-002",
                     batch2);
+
+            Inventory inventory3 = new Inventory("INV-003",
+                    batch3);
 
 //            inventory1.reserveQuantity(new BigDecimal("300"));
 //            System.out.println("-----------------------------------------------");
@@ -272,6 +276,38 @@ public class Main {
             inventory1.recordDamageFromAvailable(new BigDecimal("50"));
             System.out.println("Damaged Quantity: "+inventory1.getDamagedQuantity());
             System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
+
+            System.out.println("-----------------------------------------------");
+            System.out.println("Total Quantity: "+inventory2.getTotalQuantity());
+            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
+            inventory2.reserveQuantity(new BigDecimal("400"));
+            System.out.println("Reserved Quantity: "+inventory2.getReservedQuantity());
+            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
+            inventory2.dispatchQuantity(new BigDecimal("150"));
+            System.out.println("Dispatch Quantity: "+inventory2.getDispatchedQuantity());
+            System.out.println("Reserved Quantity: "+inventory2.getReservedQuantity());
+            inventory2.releaseReservedQuantity(new BigDecimal("100"));
+            System.out.println("Release Quantity: "+inventory2.getReservedQuantity());
+            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
+            inventory2.recordDamageFromAvailable(new BigDecimal("50"));
+            System.out.println("Damaged Quantity: "+inventory2.getDamagedQuantity());
+            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
+
+            System.out.println("--------------------------------------------");
+            System.out.println("Total Quantity: "+inventory3.getTotalQuantity());
+            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
+            inventory3.reserveQuantity(new BigDecimal("400"));
+            System.out.println("Reserved Quantity: "+inventory3.getReservedQuantity());
+            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
+            inventory3.dispatchQuantity(new BigDecimal("150"));
+            System.out.println("Dispatch Quantity: "+inventory3.getDispatchedQuantity());
+            System.out.println("Reserved Quantity: "+inventory3.getReservedQuantity());
+            inventory3.releaseReservedQuantity(new BigDecimal("100"));
+            System.out.println("Release Quantity: "+inventory3.getReservedQuantity());
+            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
+            inventory3.recordDamageFromAvailable(new BigDecimal("50"));
+            System.out.println("Damaged Quantity: "+inventory3.getDamagedQuantity());
+            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
 
 
             Customer customer = new Customer("CUST-001",
@@ -338,6 +374,22 @@ public class Main {
 //            reservation1.markAsDispatched();
 //            System.out.println(reservation1.getReservationStatus());
 
+            InMemoryInventoryRepository repo = new InMemoryInventoryRepository();
+            repo.save(inventory1);
+            repo.save(inventory2);
+            repo.save(inventory3);
+
+            for(Inventory inv : repo.findAll()){
+                System.out.println(inv.getInventoryId());
+            }
+            Optional<Inventory> result = repo.findById("INV-001");
+            System.out.println(result.isPresent());
+            System.out.println(result);
+            Optional<Inventory> missing = repo.findById("INV-999");
+            System.out.println(missing.isPresent());
+            System.out.println(missing);
+            System.out.println(repo.existsById("INV-001"));
+            repo.save(inventory1);
 
 
 
