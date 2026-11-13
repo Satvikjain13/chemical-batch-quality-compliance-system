@@ -1,16 +1,18 @@
 package com.chemicalmanagement.domain;
 
+import java.math.BigDecimal;
+
 public class QualityTest {
     private final String testId;
     private final String testName;
-    private final double minimumAcceptableValue;
-    private final double maximumAcceptableValue;
+    private final BigDecimal minimumAcceptableValue;
+    private final BigDecimal maximumAcceptableValue;
     private final String unit;
 
     //Constructors
-    public QualityTest(String testId,String testName,double minimumAcceptableValue,double maximumAcceptableValue,String unit){
+    public QualityTest(String testId, String testName, BigDecimal minimumAcceptableValue, BigDecimal maximumAcceptableValue, String unit){
         if(testId == null || testId.isBlank()){
-            throw new IllegalArgumentException("est ID cannot be empty or blank.");
+            throw new IllegalArgumentException("Test ID cannot be empty or blank.");
         }
 
         if(testName == null || testName.isBlank()){
@@ -22,12 +24,15 @@ public class QualityTest {
             );
         }
 
-        if (!Double.isFinite(minimumAcceptableValue) || !Double.isFinite(maximumAcceptableValue)) {
-            throw new IllegalArgumentException("Acceptance limits must be finite numbers."
-            );
+        if(minimumAcceptableValue == null){
+            throw new IllegalArgumentException("MinimumAcceptableValue cannot be null.");
         }
 
-        if(minimumAcceptableValue > maximumAcceptableValue){
+        if(maximumAcceptableValue == null){
+            throw new IllegalArgumentException("MaximumAcceptableValue cannot be null.");
+        }
+
+        if (minimumAcceptableValue.compareTo(maximumAcceptableValue) > 0) {
             throw new IllegalArgumentException("Minimum acceptable value cannot exceed maximum.");
         }
 
@@ -46,11 +51,11 @@ public class QualityTest {
         return testName;
     }
 
-    public double getMinimumAcceptableValue(){
+    public BigDecimal getMinimumAcceptableValue(){
         return minimumAcceptableValue;
     }
 
-    public double getMaximumAcceptableValue(){
+    public BigDecimal getMaximumAcceptableValue(){
         return maximumAcceptableValue;
     }
 
@@ -58,10 +63,10 @@ public class QualityTest {
         return unit;
     }
 
-    public boolean isWithinAcceptableLimit(double measuredValue){
-        if(!Double.isFinite(measuredValue)){
-            throw new IllegalArgumentException("Measured value must be a finite number.");
+    public boolean isWithinAcceptableLimit(BigDecimal measuredValue){
+        if(measuredValue == null){
+            throw new IllegalArgumentException("Measured Value cannot be null.");
         }
-        return measuredValue >= minimumAcceptableValue && measuredValue <= maximumAcceptableValue;
+        return measuredValue.compareTo(minimumAcceptableValue) >=0  && measuredValue.compareTo(maximumAcceptableValue) <= 0 ;
     }
 }

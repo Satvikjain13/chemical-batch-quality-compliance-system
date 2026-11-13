@@ -1,13 +1,15 @@
 package com.chemicalmanagement.domain;
 
+import java.math.BigDecimal;
+
 public class QualityTestResult {
     private final String resultId;
     private final ProductionBatch batch;
     private final QualityTest qualityTest;
-    private final double measuredValue;
+    private final BigDecimal measuredValue;
     private final boolean passed;
 
-    public QualityTestResult(String resultId,ProductionBatch batch,QualityTest qualityTest,double measuredValue){
+    public QualityTestResult(String resultId, ProductionBatch batch, QualityTest qualityTest, BigDecimal measuredValue){
         if(resultId == null || resultId.isBlank()){
             throw new IllegalArgumentException("resultId cannot be null or blank.");
         }
@@ -20,8 +22,8 @@ public class QualityTestResult {
             throw new IllegalArgumentException("QualityTest cannot be null. ");
         }
 
-        if(!Double.isFinite(measuredValue)){
-            throw new IllegalArgumentException("Measured value must be a finite number.");
+        if(measuredValue == null){
+            throw new IllegalArgumentException("Measured Value cannot be null.");
         }
 
         this.resultId = resultId;
@@ -43,7 +45,7 @@ public class QualityTestResult {
         return qualityTest;
     }
 
-    public double getMeasuredValue() {
+    public BigDecimal getMeasuredValue() {
         return measuredValue;
     }
 

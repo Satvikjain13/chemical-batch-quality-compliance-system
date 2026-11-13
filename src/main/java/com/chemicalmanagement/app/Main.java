@@ -57,33 +57,33 @@ public class Main {
             //Define Sulphuric Acid  required Quality Test
             QualityTest sulphuricPurity = new QualityTest("SQT-001",
                     "Purity",
-                    95.0,
-                    100.0,
+                    new BigDecimal("95.0"),
+                    new BigDecimal("100.0"),
                     "%");
 
             QualityTest sulphuricViscosity = new QualityTest("SQT-002",
                     "Viscosity",
-                    10,
-                    20,
+                    new BigDecimal("10"),
+                    new BigDecimal("20"),
                     "cP");
 
             QualityTest sulphuricDensity = new QualityTest("SQT-003",
                     "Density",
-                    0,
-                    1,
+                    new BigDecimal("0"),
+                    new BigDecimal("1"),
                     "g/cm3");
 
             //Define Hydrochloric Acid  required Quality Test
             QualityTest hydrochloricPurity = new QualityTest("HQT-004",
                     "Purity",
-                    99,
-                    100,
+                    new BigDecimal("99"),
+                    new BigDecimal("100"),
                     "%");
 
             QualityTest hydrochloricDensity = new QualityTest("HQT-005",
                     "Density",
-                    0.1,
-                    0.5,
+                    new BigDecimal("0.1"),
+                    new BigDecimal("0.5"),
                     "g/cm3");
 
             //Store all of Sulphuric Acid QualityTests
@@ -101,58 +101,58 @@ public class Main {
             QualityTestResult resultBatchPurity1 = new QualityTestResult("QTR-001",
                     batch1,
                     sulphuricPurity,
-                    95);
+                    new BigDecimal("95"));
             QualityTestResult resultBatchViscosity1 = new QualityTestResult("QTR-002",
                     batch1,
                     sulphuricViscosity,
-                    12);
+                    new BigDecimal("12"));
             QualityTestResult resultBatchDensity1= new QualityTestResult("QTR-003",
                     batch1,
                     sulphuricDensity,
-                    1);
+                    new BigDecimal("1"));
 
             //Record QualityTest Batch2 Result
             QualityTestResult resultBatchPurity2 = new QualityTestResult("QTR-004",
                     batch2,
                     sulphuricPurity,
-                    96);
+                    new BigDecimal("96"));
 
             QualityTestResult resultBatchViscosity2 = new QualityTestResult("QTR-005",
                     batch2,
                     sulphuricViscosity,
-                    12);
+                    new BigDecimal("12"));
 
             QualityTestResult resultBatchDensity2= new QualityTestResult("QTR-006",
                     batch2,
                     sulphuricDensity,
-                    1);
+                    new BigDecimal("1"));
 
             //Record QualityTest Batch3 Result
             QualityTestResult resultBatchPurity3 = new QualityTestResult("QTR-007",
                     batch3,
                     sulphuricPurity,
-                    95);
+                    new BigDecimal("95"));
 
             QualityTestResult resultBatchViscosity3 = new QualityTestResult("QTR-008",
                     batch3,
                     sulphuricViscosity,
-                    16);
+                    new BigDecimal("16"));
 
             QualityTestResult resultBatchDensity3 = new QualityTestResult("QTR-009",
                     batch3,
                     sulphuricDensity,
-                    0);
+                    new BigDecimal("0"));
 
             //Record QualityTest Hydrochloric Batch1 Result
             QualityTestResult resultHydBatchPurity1= new QualityTestResult("QTR-010",
                     hydBatch1,
                     hydrochloricPurity,
-                    95);
+                    new BigDecimal("95"));
 
             QualityTestResult resultHydBatchDensity1= new QualityTestResult("QTR-012",
                     hydBatch1,
                     hydrochloricDensity,
-                    0.2);
+                    new BigDecimal("0.2"));
 
 //Store all QualityTests ResultBatch1
             List<QualityTestResult> resultsBatch1 = new ArrayList<>();
