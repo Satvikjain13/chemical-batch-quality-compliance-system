@@ -13,15 +13,27 @@ public class QualityControlService {
 
         // Validate the inputs
         if(batch == null){
-            throw new IllegalArgumentException("Production Batch cannot be Null");
+            throw new IllegalArgumentException("Production Batch cannot be null");
         }
 
         if(requiredTests == null || requiredTests.isEmpty()){
-            throw new IllegalArgumentException("Required Tests cannot be Empty or Null ");
-            }
+            throw new IllegalArgumentException("Required Tests cannot be empty or null ");
+        }
 
         if(results == null){
             throw new IllegalArgumentException("Results cannot be null.");
+        }
+
+        for(QualityTest test : requiredTests){
+            if(test == null){
+                throw new IllegalArgumentException("Required Test cannot be null.");
+            }
+        }
+
+        for(QualityTestResult result : results){
+            if(result == null){
+                throw new IllegalArgumentException("Quality test result cannot be null");
+            }
         }
         // Track test failures and completion
         QualityStatus evaluationOutcome;
