@@ -25,12 +25,18 @@ public class CustomerOrder {
         if(customer == null){
             throw new IllegalArgumentException("Customer cannot be null.");
         }
+        if (customer.getCustomerStatus() != CustomerStatus.ACTIVE) {
+            throw new IllegalStateException(
+                    "Inactive customers cannot place new orders."
+            );
+        }
         if(chemical == null){
             throw new IllegalArgumentException("Chemical cannot be null.");
         }
         if(orderQuantity == null || orderQuantity.compareTo(BigDecimal.ZERO) <= 0){
             throw new IllegalArgumentException("OrderQuantity cannot be null or should be greater than 0");
         }
+
         this.orderId = orderId;
         this.customer = customer;
         this.chemical = chemical;
