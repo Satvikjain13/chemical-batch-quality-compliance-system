@@ -29,7 +29,7 @@ class InMemoryProductionBatchRepositoryTest {
     }
 
     private ProductionBatch createBatch(String batchNumber) {
-        return new ProductionBatch(batchNumber, chemical, LocalDate.of(2026,11,01),new BigDecimal("1500"));
+        return new ProductionBatch(batchNumber, chemical, LocalDate.of(2026,11,1),new BigDecimal("1500"));
     }
 
     @Test
