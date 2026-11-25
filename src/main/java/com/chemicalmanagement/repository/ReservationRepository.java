@@ -9,6 +9,7 @@ public interface ReservationRepository {
     void save(Reservation reservation);
     Optional<Reservation> findById(String reservationId);
     List<Reservation> findByOrderId(String orderId);
+    void deleteById(String reservationId);
     List<Reservation> findAll();
     boolean existsById(String reservationId);
 }

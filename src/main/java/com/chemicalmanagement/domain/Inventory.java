@@ -1,6 +1,7 @@
 package com.chemicalmanagement.domain;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Inventory {
     private final String inventoryId;
@@ -118,6 +119,26 @@ public class Inventory {
 
         damagedQuantity = damagedQuantity.add(quantity);
         availableQuantity = availableQuantity.subtract(quantity);
+    }
+
+    public void restoreReservationState(BigDecimal originalAvailableQuantity,
+                                        BigDecimal originalReservedQuantity){
+        if(originalAvailableQuantity == null){
+            throw new IllegalArgumentException("Original Available Quantity cannot be null");
+        }
+        if(originalReservedQuantity == null){
+            throw new IllegalArgumentException("Original Reserved quantity cannot br null.");
+        }
+        if(originalAvailableQuantity.compareTo(BigDecimal.ZERO) < 0  ||
+                originalReservedQuantity.compareTo(BigDecimal.ZERO) < 0){
+            throw new IllegalArgumentException("OriginalAvailableQuantity or OriginalReservedQuantity cannot be negative");
+        }
+        BigDecimal inVariantTotal = originalAvailableQuantity.add(originalReservedQuantity).add(dispatchedQuantity).add(damagedQuantity);
+        if(totalQuantity.compareTo(inVariantTotal) != 0){
+            throw new IllegalArgumentException("Invariant should be equal to Total Quantity");
+        }
+        availableQuantity = originalAvailableQuantity;
+        reservedQuantity = originalReservedQuantity;
     }
 }
 

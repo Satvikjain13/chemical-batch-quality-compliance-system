@@ -46,6 +46,14 @@ public class InMemoryReservationRepository implements ReservationRepository{
     }
 
     @Override
+    public void deleteById(String reservationId) {
+        if(reservationId == null || reservationId.isBlank()){
+            throw new IllegalArgumentException("Reservation Id cannot be null or Blank.");
+        }
+        reservationMap.remove(reservationId);
+    }
+
+    @Override
     public List<Reservation> findAll() {
         return List.copyOf(reservationMap.values());
     }

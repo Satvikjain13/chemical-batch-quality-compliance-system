@@ -14,8 +14,10 @@ class InventoryTest {
 
     private Chemical chemical;
     private ProductionBatch approvedBatch;
+    private ProductionBatch batch;
     private ProductionBatch unapprovedBatch;
     private Inventory inventory;
+    private Inventory inventory2;
     @BeforeEach
     void setUp() {
         chemical = new Chemical(
@@ -32,7 +34,13 @@ class InventoryTest {
                 new BigDecimal("1000")
         );
 
+        batch = new ProductionBatch("BATCH-002",
+                chemical,
+                LocalDate.of(2026,11,1),
+                new BigDecimal("100"));
+
         approvedBatch.completeQualityEvaluation(QualityStatus.PASSED);
+        batch.completeQualityEvaluation(QualityStatus.PASSED);
 
         unapprovedBatch = new ProductionBatch(
                 "BATCH-002",
@@ -43,6 +51,11 @@ class InventoryTest {
 
         inventory = new Inventory("INV-001",
                 approvedBatch);
+
+        inventory2 = new Inventory("INV-002",
+                batch);
+
+
     }
 
     @Test
@@ -352,6 +365,21 @@ class InventoryTest {
                 0,
                 inventory.getTotalQuantity().compareTo(accountedQuantity)
         );
+    }
+
+    @Test
+    void shouldNotModifyInventoryWhenRestoredStateViolatesInvariant(){
+        inventory2.reserveQuantity(new BigDecimal("30"));
+        inventory2.dispatchQuantity(new BigDecimal("10"));
+        inventory2.recordDamageFromAvailable(new BigDecimal("10"));
+
+        Assertions.assertThrows(IllegalArgumentException.class,() -> {
+            inventory2.restoreReservationState(new BigDecimal("50"),new BigDecimal("20"));
+        });
+        Assertions.assertEquals(new BigDecimal("60"),inventory2.getAvailableQuantity());
+        Assertions.assertEquals(new BigDecimal("20"),inventory2.getReservedQuantity());
+        Assertions.assertEquals(new BigDecimal("10"),inventory2.getDispatchedQuantity());
+        Assertions.assertEquals(new BigDecimal("10"),inventory2.getDamagedQuantity());
     }
 
 }

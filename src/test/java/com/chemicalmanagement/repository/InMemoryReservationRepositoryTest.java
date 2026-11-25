@@ -238,4 +238,30 @@ public class InMemoryReservationRepositoryTest {
 
         Assertions.assertEquals(1, repository.findAll().size());
     }
+
+    @Test
+    void shouldDeleteReservationById(){
+        Reservation reservation = createReservation("RES-111");
+
+        repository.save(reservation);
+        Assertions.assertTrue(repository.existsById("RES-111"));
+
+        repository.deleteById("RES-111");
+
+        Assertions.assertFalse(repository.existsById("RES-111"));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingWithNullId(){
+        Assertions.assertThrows(IllegalArgumentException.class,() -> {
+            repository.deleteById(null);
+        });
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingWithBlankId(){
+        Assertions.assertThrows(IllegalArgumentException.class,() -> {
+            repository.deleteById("  ");
+        });
+    }
 }
