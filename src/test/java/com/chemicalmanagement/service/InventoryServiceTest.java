@@ -76,6 +76,43 @@ public class InventoryServiceTest {
         service = new InventoryService(inventoryRepository,reservationRepository);
     }
 
+
+    private ReservationRepository createTwoReservationRepository(
+            boolean failOnRelease,
+            boolean failOnDispatch) {
+
+        order.markAsValidated();
+        order.markAsReserved();
+
+        inventory1.reserveQuantity(new BigDecimal("100"));
+        inventory2.reserveQuantity(new BigDecimal("100"));
+
+        TestReservationRepository repository =
+                new TestReservationRepository();
+
+        Reservation firstReservation = new Reservation(
+                "RES-001",
+                order,
+                inventory1,
+                new BigDecimal("100")
+        );
+
+        Reservation secondReservation = new FailingReservation(
+                "RES-002",
+                order,
+                inventory2,
+                new BigDecimal("100"),
+                failOnRelease,
+                failOnDispatch
+        );
+
+        repository.save(firstReservation);
+        repository.save(secondReservation);
+
+        return repository;
+    }
+
+
     @Test
     void shouldThrowExceptionWhenInventoryRepositoryIsNull(){
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -295,6 +332,136 @@ public class InventoryServiceTest {
         );
     }
 
+
+    @Test
+    void shouldReleaseReservationsSuccessfully() {
+        ReservationRepository testRepository =
+                createTwoReservationRepository(false, false);
+
+        InventoryService testService =
+                new InventoryService(inventoryRepository, testRepository);
+
+        List<Reservation> reservations = testRepository.findAll();
+
+        testService.releaseReservationForOrder(order);
+
+        Assertions.assertEquals(new BigDecimal("700"),
+                inventory1.getAvailableQuantity());
+        Assertions.assertEquals(BigDecimal.ZERO,
+                inventory1.getReservedQuantity());
+
+        Assertions.assertEquals(new BigDecimal("1000"),
+                inventory2.getAvailableQuantity());
+        Assertions.assertEquals(BigDecimal.ZERO,
+                inventory2.getReservedQuantity());
+
+        Assertions.assertEquals(ReservationStatus.RELEASED,
+                reservations.get(0).getReservationStatus());
+        Assertions.assertEquals(ReservationStatus.RELEASED,
+                reservations.get(1).getReservationStatus());
+    }
+
+    @Test
+    void shouldRollbackAllChangesWhenReleaseFailsMidway() {
+        ReservationRepository testRepository =
+                createTwoReservationRepository(true, false);
+
+        InventoryService testService =
+                new InventoryService(inventoryRepository, testRepository);
+
+        List<Reservation> reservations = testRepository.findAll();
+
+        Assertions.assertThrows(IllegalStateException.class, () ->
+                testService.releaseReservationForOrder(order));
+
+        // Verify inventory rollback
+        Assertions.assertEquals(new BigDecimal("600"),
+                inventory1.getAvailableQuantity());
+        Assertions.assertEquals(new BigDecimal("100"),
+                inventory1.getReservedQuantity());
+
+        Assertions.assertEquals(new BigDecimal("900"),
+                inventory2.getAvailableQuantity());
+        Assertions.assertEquals(new BigDecimal("100"),
+                inventory2.getReservedQuantity());
+
+        // Verify reservation status rollback
+        Assertions.assertEquals(ReservationStatus.ACTIVE,
+                reservations.get(0).getReservationStatus());
+        Assertions.assertEquals(ReservationStatus.ACTIVE,
+                reservations.get(1).getReservationStatus());
+    }
+
+    @Test
+    void shouldDispatchReservationsSuccessfully() {
+        ReservationRepository testRepository =
+                createTwoReservationRepository(false, false);
+
+        InventoryService testService =
+                new InventoryService(inventoryRepository, testRepository);
+
+        List<Reservation> reservations = testRepository.findAll();
+
+        testService.dispatchReservationForOrder(order);
+
+        // Verify inventory quantities
+        Assertions.assertEquals(new BigDecimal("600"),
+                inventory1.getAvailableQuantity());
+        Assertions.assertEquals(BigDecimal.ZERO,
+                inventory1.getReservedQuantity());
+        Assertions.assertEquals(new BigDecimal("100"),
+                inventory1.getDispatchedQuantity());
+
+        Assertions.assertEquals(new BigDecimal("900"),
+                inventory2.getAvailableQuantity());
+        Assertions.assertEquals(BigDecimal.ZERO,
+                inventory2.getReservedQuantity());
+        Assertions.assertEquals(new BigDecimal("100"),
+                inventory2.getDispatchedQuantity());
+
+        // Verify reservation statuses
+        Assertions.assertEquals(ReservationStatus.DISPATCHED,
+                reservations.get(0).getReservationStatus());
+        Assertions.assertEquals(ReservationStatus.DISPATCHED,
+                reservations.get(1).getReservationStatus());
+    }
+
+    @Test
+    void shouldRollbackAllChangesWhenDispatchFailsMidway() {
+        ReservationRepository testRepository =
+                createTwoReservationRepository(false, true);
+
+        InventoryService testService =
+                new InventoryService(inventoryRepository, testRepository);
+
+        List<Reservation> reservations = testRepository.findAll();
+
+        Assertions.assertThrows(IllegalStateException.class, () ->
+                testService.dispatchReservationForOrder(order));
+
+        // Verify inventory rollback
+        Assertions.assertEquals(new BigDecimal("600"),
+                inventory1.getAvailableQuantity());
+        Assertions.assertEquals(new BigDecimal("100"),
+                inventory1.getReservedQuantity());
+        Assertions.assertEquals(BigDecimal.ZERO,
+                inventory1.getDispatchedQuantity());
+
+        Assertions.assertEquals(new BigDecimal("900"),
+                inventory2.getAvailableQuantity());
+        Assertions.assertEquals(new BigDecimal("100"),
+                inventory2.getReservedQuantity());
+        Assertions.assertEquals(BigDecimal.ZERO,
+                inventory2.getDispatchedQuantity());
+
+        // Verify reservation status rollback
+        Assertions.assertEquals(ReservationStatus.ACTIVE,
+                reservations.get(0).getReservationStatus());
+        Assertions.assertEquals(ReservationStatus.ACTIVE,
+                reservations.get(1).getReservationStatus());
+    }
+
+
     private static class FailingReservationRepository implements ReservationRepository{
         private final InMemoryReservationRepository delegate = new InMemoryReservationRepository();
         private int  saveAttempts = 0;
@@ -344,4 +511,89 @@ public class InventoryServiceTest {
             throw new IllegalStateException("Simulated inventory release failure");
         }
     }
+
+
+    private static class TestReservationRepository
+            implements ReservationRepository {
+
+        private final List<Reservation> reservations = new ArrayList<>();
+
+        @Override
+        public void save(Reservation reservation) {
+            reservations.add(reservation);
+        }
+
+        @Override
+        public Optional<Reservation> findById(String reservationId) {
+            return reservations.stream()
+                    .filter(r -> r.getReservationId().equals(reservationId))
+                    .findFirst();
+        }
+
+        @Override
+        public List<Reservation> findByOrderId(String orderId) {
+            return new ArrayList<>(reservations);
+        }
+
+        @Override
+        public void deleteById(String reservationId) {
+            reservations.removeIf(
+                    r -> r.getReservationId().equals(reservationId)
+            );
+        }
+
+        @Override
+        public List<Reservation> findAll() {
+            return new ArrayList<>(reservations);
+        }
+
+        @Override
+        public boolean existsById(String reservationId) {
+            return reservations.stream()
+                    .anyMatch(r -> r.getReservationId().equals(reservationId));
+        }
+    }
+
+    private static class FailingReservation extends Reservation {
+
+        private final boolean failOnRelease;
+        private final boolean failOnDispatch;
+
+        public FailingReservation(
+                String reservationId,
+                CustomerOrder order,
+                Inventory inventory,
+                BigDecimal quantity,
+                boolean failOnRelease,
+                boolean failOnDispatch) {
+
+            super(reservationId, order, inventory, quantity);
+
+            this.failOnRelease = failOnRelease;
+            this.failOnDispatch = failOnDispatch;
+        }
+
+        @Override
+        public void markAsReleased() {
+            if (failOnRelease) {
+                throw new IllegalStateException(
+                        "Simulated failure during reservation release."
+                );
+            }
+
+            super.markAsReleased();
+        }
+
+        @Override
+        public void markAsDispatched() {
+            if (failOnDispatch) {
+                throw new IllegalStateException(
+                        "Simulated failure during reservation dispatch."
+                );
+            }
+
+            super.markAsDispatched();
+        }
+    }
+
 }

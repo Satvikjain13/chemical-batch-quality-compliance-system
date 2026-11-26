@@ -110,7 +110,9 @@ public class InventoryService {
                 }
                 InventorySnapshot snapShot = new InventorySnapshot(inventory,
                         inventory.getAvailableQuantity(),
-                        inventory.getReservedQuantity());
+                        inventory.getReservedQuantity(),
+                        inventory.getDispatchedQuantity(),
+                        inventory.getDamagedQuantity());
                 inventorySnapshots.add(snapShot);
                 BigDecimal quantityToReserve = remainingQuantity.min(inventory.getAvailableQuantity());
                 inventory.reserveQuantity(quantityToReserve);
@@ -129,7 +131,9 @@ public class InventoryService {
                     Inventory inventory = inventorySnapshot.getInventory();
                     BigDecimal originalAvailableQuantity = inventorySnapshot.getOriginalAvailableQuantity();
                     BigDecimal originalReservedQuantity = inventorySnapshot.getOriginalReservedQuantity();
-                    inventory.restoreReservationState(originalAvailableQuantity, originalReservedQuantity);
+                    BigDecimal originalDispatchedQuantity = inventorySnapshot.getOriginalDispatchedQuantity();
+                    BigDecimal originalDamagedQuantity = inventorySnapshot.getOriginalDamagedQuantity();
+                    inventory.restoreState(originalAvailableQuantity,originalReservedQuantity,originalDispatchedQuantity,originalDamagedQuantity);
                 }catch(RuntimeException rollbackException){
                     originalException.addSuppressed(rollbackException);
                 }
@@ -154,14 +158,19 @@ public class InventoryService {
         List<Reservation> retrieveReservation = reservationRepository.findByOrderId(order.getOrderId());
         List<Reservation> activeReservations = new ArrayList<>();
         List<InventorySnapshot> inventorySnapshots = new ArrayList<>();
+        List<ReservationSnapshot> reservationSnapshots = new ArrayList<>();
         try {
             for (Reservation reservation : retrieveReservation) {
                 if (reservation.getReservationStatus() == ReservationStatus.ACTIVE) {
                 InventorySnapshot inventorySnapshot = new InventorySnapshot(reservation.getInventory(),
                         reservation.getInventory().getAvailableQuantity(),
-                        reservation.getInventory().getReservedQuantity());
+                        reservation.getInventory().getReservedQuantity(),
+                        reservation.getInventory().getDispatchedQuantity(),
+                        reservation.getInventory().getDamagedQuantity());
                 inventorySnapshots.add(inventorySnapshot);
                 activeReservations.add(reservation);
+                ReservationSnapshot reservationSnapshot = new ReservationSnapshot(reservation,reservation.getReservationStatus());
+                reservationSnapshots.add(reservationSnapshot);
                 }
             }
             for(Reservation reservation : activeReservations){
@@ -180,14 +189,92 @@ public class InventoryService {
                             Inventory inventory = inventorySnapshot.getInventory();
                             BigDecimal originalAvailableQuantity = inventorySnapshot.getOriginalAvailableQuantity();
                             BigDecimal originalReservedQuantity = inventorySnapshot.getOriginalReservedQuantity();
+                            BigDecimal originalDispatchedQuantity = inventorySnapshot.getOriginalDispatchedQuantity();
+                            BigDecimal originalDamagedQuantity = inventorySnapshot.getOriginalDamagedQuantity();
 
-                            inventory.restoreReservationState(originalAvailableQuantity, originalReservedQuantity);
+                            inventory.restoreState(originalAvailableQuantity,originalReservedQuantity,originalDispatchedQuantity,originalDamagedQuantity);
                         }catch(RuntimeException rollbackException){
                             originalException.addSuppressed(rollbackException);
                     }
                     }
+                    for(ReservationSnapshot reservationSnapshot : reservationSnapshots){
+                        try{
+                            reservationSnapshot.getReservation().restoreStatus(reservationSnapshot.getReservationStatus());
+                        }catch(RuntimeException rollbackException){
+                            originalException.addSuppressed(rollbackException);
+                        }
+                    }
                     throw originalException;
             }
         }
-    }
+
+        public void dispatchReservationForOrder(CustomerOrder order){
+           if(order == null){
+               throw new IllegalArgumentException("Customer Order cannot be null.");
+           }
+            if (order.getOrderStatus() != OrderStatus.RESERVED) {
+                throw new IllegalStateException(
+                        "Only reserved orders can be dispatched."
+                );
+            }
+           List<Reservation> reservationList = reservationRepository.findByOrderId(order.getOrderId());
+           List<Reservation> activeReservations = new ArrayList<>();
+
+           List<InventorySnapshot> inventorySnapshots = new ArrayList<>();
+           List<ReservationSnapshot> reservationSnapshots = new ArrayList<>();
+           try {
+               for (Reservation reservation : reservationList) {
+                   if (ReservationStatus.ACTIVE == reservation.getReservationStatus()) {
+                       InventorySnapshot inventorySnapshot = new InventorySnapshot(reservation.getInventory(),
+                               reservation.getInventory().getAvailableQuantity(),
+                               reservation.getInventory().getReservedQuantity(),
+                               reservation.getInventory().getDispatchedQuantity(),
+                               reservation.getInventory().getDamagedQuantity());
+                       inventorySnapshots.add(inventorySnapshot);
+                       ReservationSnapshot reservationSnapshot = new ReservationSnapshot(reservation,
+                               reservation.getReservationStatus());
+                       reservationSnapshots.add(reservationSnapshot);
+                       activeReservations.add(reservation);
+                   }
+               }
+               if (activeReservations.isEmpty()) {
+                   throw new IllegalStateException(
+                           "No active reservations found for this order."
+                   );
+               }
+               for (Reservation reservation : activeReservations) {
+                   reservation.getInventory().dispatchQuantity(reservation.getReservedQuantity());
+               }
+
+               for (Reservation reservation : activeReservations) {
+
+                   reservation.markAsDispatched();
+               }
+           }catch(RuntimeException originalException){
+               for(InventorySnapshot inventorySnapshot : inventorySnapshots){
+                   try {
+                       Inventory inventory = inventorySnapshot.getInventory();
+                       BigDecimal originalAvailableQuantity = inventorySnapshot.getOriginalAvailableQuantity();
+                       BigDecimal originalReservedQuantity = inventorySnapshot.getOriginalReservedQuantity();
+                       BigDecimal originalDispatchedQuantity = inventorySnapshot.getOriginalDispatchedQuantity();
+                       BigDecimal originalDamagedQuantity = inventorySnapshot.getOriginalDamagedQuantity();
+
+                       inventory.restoreState(originalAvailableQuantity, originalReservedQuantity, originalDispatchedQuantity, originalDamagedQuantity);
+                   }catch(RuntimeException rollbackException){
+                       originalException.addSuppressed(rollbackException);
+                   }
+               }
+                   for(ReservationSnapshot reservationSnapshot : reservationSnapshots){
+                       try {
+                           reservationSnapshot.getReservation().restoreStatus(reservationSnapshot.getReservationStatus());
+                       }catch(RuntimeException rollbackException){
+                           originalException.addSuppressed(rollbackException);
+                       }
+                   }
+               throw originalException;
+               }
+           }
+        }
+
+
 

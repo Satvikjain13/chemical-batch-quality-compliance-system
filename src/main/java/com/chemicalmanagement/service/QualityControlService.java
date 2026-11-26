@@ -1,10 +1,9 @@
 package com.chemicalmanagement.service;
 
-import com.chemicalmanagement.domain.ProductionBatch;
-import com.chemicalmanagement.domain.QualityStatus;
-import com.chemicalmanagement.domain.QualityTest;
-import com.chemicalmanagement.domain.QualityTestResult;
+import com.chemicalmanagement.domain.*;
+
 import java.util.List;
+import java.util.Map;
 
 public class QualityControlService {
     public void evaluateBatch(ProductionBatch batch,
@@ -68,5 +67,29 @@ public class QualityControlService {
             evaluationOutcome = QualityStatus.PASSED;
         }
         batch.completeQualityEvaluation(evaluationOutcome);
+    }
+
+    public void evaluateBatchUsingProfile(ProductionBatch batch,
+                                          List<QualityTestResult> results,
+                                          Map<String, ChemicalQualityProfile> profileRegistry){
+        if (batch == null) {
+            throw new IllegalArgumentException("Production batch cannot be null");
+        }
+
+        if (results == null) {
+            throw new IllegalArgumentException("Results cannot be null");
+        }
+
+        if (profileRegistry == null) {
+            throw new IllegalArgumentException("Profile registry cannot be null");
+        }
+
+        String chemicalId = batch.getChemical().getChemicalId();
+        ChemicalQualityProfile profile = profileRegistry.get(chemicalId);
+        if(profile == null){
+            throw new IllegalStateException("No quality profile found for chemical: " + chemicalId);
+        }
+        List<QualityTest> requiredTests = profile.getRequiredTests();
+        evaluateBatch(batch,requiredTests,results);
     }
 }

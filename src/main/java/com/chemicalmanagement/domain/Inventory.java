@@ -140,5 +140,40 @@ public class Inventory {
         availableQuantity = originalAvailableQuantity;
         reservedQuantity = originalReservedQuantity;
     }
+
+    public void restoreState(BigDecimal originalAvailableQuantity,
+                             BigDecimal originalReservedQuantity,
+                             BigDecimal originalDispatchedQuantity,
+                             BigDecimal originalDamagedQuantity){
+        if(originalAvailableQuantity == null){
+            throw new IllegalArgumentException("Original Available Quantity cannot be null.");
+        }
+        if(originalReservedQuantity == null){
+            throw new IllegalArgumentException("Original Reserved Quantity cannot be null.");
+        }
+        if(originalDispatchedQuantity == null){
+            throw new IllegalArgumentException("Original Dispatched Quantity cannot be null.");
+        }
+        if(originalDamagedQuantity == null){
+            throw new IllegalArgumentException("Original Damaged Quantity cannot be null.");
+        }
+
+        if(originalAvailableQuantity.compareTo(BigDecimal.ZERO) < 0 ||
+        originalReservedQuantity.compareTo(BigDecimal.ZERO) < 0 ||
+        originalDispatchedQuantity.compareTo(BigDecimal.ZERO) < 0 ||
+        originalDamagedQuantity.compareTo(BigDecimal.ZERO) < 0){
+            throw new IllegalArgumentException("OriginalAvailableQuantity or OriginalReservedQuantity or OriginalDispatchedQuantity or OriginalDamagedQuantity cannot be negative");
+        }
+
+        BigDecimal invariantTotal = originalAvailableQuantity.add(originalReservedQuantity).add(originalDispatchedQuantity).add(originalDamagedQuantity);
+        if(totalQuantity.compareTo(invariantTotal) != 0){
+            throw new IllegalArgumentException("Restored inventory quantities must equal total quantity.");
+        }
+
+        availableQuantity = originalAvailableQuantity;
+        reservedQuantity = originalReservedQuantity;
+        dispatchedQuantity = originalDispatchedQuantity;
+        damagedQuantity = originalDamagedQuantity;
+    }
 }
 

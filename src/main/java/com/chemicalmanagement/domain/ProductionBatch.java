@@ -88,8 +88,6 @@ public class ProductionBatch {
             this.qualityStatus = QualityStatus.PASSED;
             this.batchStatus = BatchStatus.APPROVED;
         }
-
-
     }
 
 }

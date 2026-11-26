@@ -11,21 +11,26 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class QualityControlServiceTest {
 
-    Chemical sulphuricAcid;
-    ProductionBatch batch1;
-    QualityControlService service;
-    QualityTest sulphuricPurity;
-    QualityTest sulphurViscosity;
-    QualityTest sulphurDensity;
-    List<QualityTest> requiredTests;
-    QualityTestResult resultBatch1Purity;
-    QualityTestResult resultBatch1Viscosity;
-    QualityTestResult resultBatch1Density;
-    List<QualityTestResult> results ;
+    private Chemical sulphuricAcid;
+    private ProductionBatch batch1;
+    private QualityControlService service;
+    private QualityTest sulphuricPurity;
+    private QualityTest sulphurViscosity;
+    private QualityTest sulphurDensity;
+    private List<QualityTest> requiredTests;
+    private QualityTestResult resultBatch1Purity;
+    private QualityTestResult resultBatch1Viscosity;
+    private QualityTestResult resultBatch1Density;
+    private List<QualityTestResult> results ;
+    private ChemicalQualityProfile sulphuricProfile;
+    private Map<String,ChemicalQualityProfile> profile;
+    private String chemicalId;
     @BeforeEach
     void setup(){
         sulphuricAcid = new Chemical("CHEM-001",
@@ -77,6 +82,10 @@ public class QualityControlServiceTest {
         results.add(resultBatch1Purity);
         results.add(resultBatch1Viscosity);
         results.add(resultBatch1Density);
+
+        sulphuricProfile = new ChemicalQualityProfile(sulphuricAcid,requiredTests);
+        profile = new HashMap<>();
+        profile.put(sulphuricAcid.getChemicalId(),sulphuricProfile);
     }
     @Test
     void shouldThrowExceptionWhenBatchIsNull(){
@@ -334,6 +343,42 @@ public class QualityControlServiceTest {
                 BatchStatus.APPROVED,
                 batch1.getBatchStatus()
         );
+    }
+
+    @Test
+    void shouldEvaluateBatchUsingCorrectChemicalProfile(){
+        service.evaluateBatchUsingProfile(batch1,results,profile);
+        Assertions.assertEquals(QualityStatus.PASSED,batch1.getQualityStatus());
+        Assertions.assertEquals(BatchStatus.APPROVED,batch1.getBatchStatus());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenProfileRegistryIsNull(){
+        Assertions.assertThrows(IllegalArgumentException.class,() -> {
+            service.evaluateBatchUsingProfile(batch1,results,null);
+        });
+    }
+
+    @Test
+    void shouldThrowExceptionWhenChemicalProfileIsNotFound(){
+        Map<String,ChemicalQualityProfile> emptyProfile = new HashMap<>();
+        Assertions.assertThrows(IllegalStateException.class,() -> {
+            service.evaluateBatchUsingProfile(batch1,results,emptyProfile);
+        });
+    }
+
+    @Test
+    void shouldThrowExceptionWhenResultsAreNull(){
+        Assertions.assertThrows(IllegalArgumentException.class,() -> {
+            service.evaluateBatchUsingProfile(batch1,null,profile);
+        });
+    }
+
+    @Test
+    void shouldThrowExceptionWhenBatchAreNull(){
+        Assertions.assertThrows(IllegalArgumentException.class,() -> {
+            service.evaluateBatchUsingProfile(null,results,profile);
+        });
     }
 
 }

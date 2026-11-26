@@ -374,12 +374,31 @@ class InventoryTest {
         inventory2.recordDamageFromAvailable(new BigDecimal("10"));
 
         Assertions.assertThrows(IllegalArgumentException.class,() -> {
-            inventory2.restoreReservationState(new BigDecimal("50"),new BigDecimal("20"));
+            inventory2.restoreState(new BigDecimal("50"),new BigDecimal("20"),new BigDecimal("10"),new BigDecimal("10"));
         });
         Assertions.assertEquals(new BigDecimal("60"),inventory2.getAvailableQuantity());
         Assertions.assertEquals(new BigDecimal("20"),inventory2.getReservedQuantity());
         Assertions.assertEquals(new BigDecimal("10"),inventory2.getDispatchedQuantity());
         Assertions.assertEquals(new BigDecimal("10"),inventory2.getDamagedQuantity());
     }
+
+    @Test
+    void shouldRestoreAllInventoryQuantitiesSuccessfully(){
+        inventory2.reserveQuantity(new BigDecimal("30"));
+        inventory2.recordDamageFromAvailable(new BigDecimal("10"));
+        BigDecimal originalAvailable = inventory2.getAvailableQuantity();
+        BigDecimal originalReserved = inventory2.getReservedQuantity();
+        BigDecimal originalDispatched = inventory2.getDispatchedQuantity();
+        BigDecimal originalDamaged = inventory2.getDamagedQuantity();
+        inventory2.dispatchQuantity(new BigDecimal("10"));
+        inventory2.restoreState(originalAvailable,originalReserved,originalDispatched,originalDamaged);
+
+        Assertions.assertEquals(new BigDecimal("60"), inventory2.getAvailableQuantity());
+        Assertions.assertEquals(new BigDecimal("30"), inventory2.getReservedQuantity());
+        Assertions.assertEquals(new BigDecimal("0"), inventory2.getDispatchedQuantity());
+        Assertions.assertEquals(new BigDecimal("10"), inventory2.getDamagedQuantity());
+        Assertions.assertEquals(new BigDecimal("100"), inventory2.getTotalQuantity());
+    }
+
 
 }

@@ -25,6 +25,12 @@ public class Reservation {
         if(inventory == null){
             throw new IllegalArgumentException("Inventory cannot be null.");
         }
+        if (!inventory.getBatch().getChemical().getChemicalId()
+                .equals(order.getChemical().getChemicalId())) {
+            throw new IllegalArgumentException(
+                    "Inventory chemical must match order chemical."
+            );
+        }
         if(reservedQuantity == null || reservedQuantity.compareTo(BigDecimal.ZERO) <= 0){
             throw new IllegalArgumentException("Reserved Quantity cannot be null or should be greater than zero.");
         }
@@ -81,5 +87,13 @@ public class Reservation {
         }
 
         this.reservationStatus = ReservationStatus.DISPATCHED;
+    }
+
+    public void restoreStatus(ReservationStatus originalStatus) {
+        if (originalStatus == null) {
+            throw new IllegalArgumentException("Reservation Status cannot be null.");
+        }
+
+        this.reservationStatus = originalStatus;
     }
 }

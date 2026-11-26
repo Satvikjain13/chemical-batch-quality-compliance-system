@@ -2,425 +2,707 @@ package com.chemicalmanagement.app;
 
 import com.chemicalmanagement.domain.*;
 import com.chemicalmanagement.repository.InMemoryInventoryRepository;
+import com.chemicalmanagement.repository.InMemoryReservationRepository;
+import com.chemicalmanagement.repository.InventoryRepository;
+import com.chemicalmanagement.repository.ReservationRepository;
+import com.chemicalmanagement.service.InventoryService;
 import com.chemicalmanagement.service.OrderService;
 import com.chemicalmanagement.service.QualityControlService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        try{
-            //create a chemical
-            Chemical chemical = new Chemical("CHEM-001",
-                    "Sulphuric Acid",
-                    "Litres",
-                    365);
-
-            Chemical chemical2 = new Chemical("CHEM-002",
-                    "Hydrochloric Acid",
-                            "Litres",
-                    180);
-
-            //create a Production Batch
-            ProductionBatch batch1 = new ProductionBatch("BATCH-001",
-                    chemical,
-                    LocalDate.of(2026,10,24),
-                    new BigDecimal("500"));
-
-            ProductionBatch batch2 = new ProductionBatch("BATCH-002",
-                    chemical,
-                    LocalDate.of(2026,10,30),
-                    new BigDecimal("1000"));
-
-            ProductionBatch batch3 = new ProductionBatch("BATCH-003",
-                    chemical,
-                    LocalDate.of(2026,10,31),
-                    new BigDecimal("800"));
-
-            ProductionBatch hydBatch1 = new ProductionBatch("BATCH-004",
-                    chemical2,
-                    LocalDate.of(2026,11,02),
-                    new BigDecimal("1000"));
-
-//            System.out.println("Batch created successfully.");
-//            System.out.println("Batch number : "+batch.getBatchNumber());
-//            System.out.println("Chemical Name: "+batch.getChemical().getName());
-//            System.out.println("Manufacturing Date: "+batch.getManufacturingDate());
-//            System.out.println("Quantity: "+batch.getQuantity());
-//            System.out.println("QualityStatus: "+batch.getQualityStatus());
-//            System.out.println("Expiry Date: "+batch.getExpiryDate());
-
-
-
-            //Define Sulphuric Acid  required Quality Test
-            QualityTest sulphuricPurity = new QualityTest("SQT-001",
-                    "Purity",
-                    new BigDecimal("95.0"),
-                    new BigDecimal("100.0"),
-                    "%");
-
-            QualityTest sulphuricViscosity = new QualityTest("SQT-002",
-                    "Viscosity",
-                    new BigDecimal("10"),
-                    new BigDecimal("20"),
-                    "cP");
-
-            QualityTest sulphuricDensity = new QualityTest("SQT-003",
-                    "Density",
-                    new BigDecimal("0"),
-                    new BigDecimal("1"),
-                    "g/cm3");
-
-            //Define Hydrochloric Acid  required Quality Test
-            QualityTest hydrochloricPurity = new QualityTest("HQT-004",
-                    "Purity",
-                    new BigDecimal("99"),
-                    new BigDecimal("100"),
-                    "%");
-
-            QualityTest hydrochloricDensity = new QualityTest("HQT-005",
-                    "Density",
-                    new BigDecimal("0.1"),
-                    new BigDecimal("0.5"),
-                    "g/cm3");
-
-            //Store all of Sulphuric Acid QualityTests
-            List<QualityTest> sulphuricTests = new ArrayList<>();
-            sulphuricTests.add(sulphuricPurity);
-            sulphuricTests.add(sulphuricViscosity);
-            sulphuricTests.add(sulphuricDensity);
-
-            //Store all of Hydrochloric  Acid QualityTests
-            List<QualityTest> hydrochloricTests = new ArrayList<>();
-            hydrochloricTests.add(hydrochloricPurity);
-            hydrochloricTests.add(hydrochloricDensity);
-
-            //Record QualityTest Batch1 Result
-            QualityTestResult resultBatchPurity1 = new QualityTestResult("QTR-001",
-                    batch1,
-                    sulphuricPurity,
-                    new BigDecimal("95"));
-            QualityTestResult resultBatchViscosity1 = new QualityTestResult("QTR-002",
-                    batch1,
-                    sulphuricViscosity,
-                    new BigDecimal("12"));
-            QualityTestResult resultBatchDensity1= new QualityTestResult("QTR-003",
-                    batch1,
-                    sulphuricDensity,
-                    new BigDecimal("1"));
-
-            //Record QualityTest Batch2 Result
-            QualityTestResult resultBatchPurity2 = new QualityTestResult("QTR-004",
-                    batch2,
-                    sulphuricPurity,
-                    new BigDecimal("96"));
-
-            QualityTestResult resultBatchViscosity2 = new QualityTestResult("QTR-005",
-                    batch2,
-                    sulphuricViscosity,
-                    new BigDecimal("12"));
-
-            QualityTestResult resultBatchDensity2= new QualityTestResult("QTR-006",
-                    batch2,
-                    sulphuricDensity,
-                    new BigDecimal("1"));
-
-            //Record QualityTest Batch3 Result
-            QualityTestResult resultBatchPurity3 = new QualityTestResult("QTR-007",
-                    batch3,
-                    sulphuricPurity,
-                    new BigDecimal("95"));
-
-            QualityTestResult resultBatchViscosity3 = new QualityTestResult("QTR-008",
-                    batch3,
-                    sulphuricViscosity,
-                    new BigDecimal("16"));
-
-            QualityTestResult resultBatchDensity3 = new QualityTestResult("QTR-009",
-                    batch3,
-                    sulphuricDensity,
-                    new BigDecimal("0"));
-
-            //Record QualityTest Hydrochloric Batch1 Result
-            QualityTestResult resultHydBatchPurity1= new QualityTestResult("QTR-010",
-                    hydBatch1,
-                    hydrochloricPurity,
-                    new BigDecimal("95"));
-
-            QualityTestResult resultHydBatchDensity1= new QualityTestResult("QTR-012",
-                    hydBatch1,
-                    hydrochloricDensity,
-                    new BigDecimal("0.2"));
-
-//Store all QualityTests ResultBatch1
-            List<QualityTestResult> resultsBatch1 = new ArrayList<>();
-            resultsBatch1.add(resultBatchPurity1);
-            resultsBatch1.add(resultBatchViscosity1);
-            resultsBatch1.add(resultBatchDensity1);
-
-            //Store all QualityTests ResultBatch2
-            List<QualityTestResult> resultsBatch2 = new ArrayList<>();
-            resultsBatch2.add(resultBatchPurity2);
-            resultsBatch2.add(resultBatchViscosity2);
-            resultsBatch2.add(resultBatchDensity2);
-
-            //Store all QualityTests ResultBatch3
-            List<QualityTestResult> resultsBatch3 = new ArrayList<>();
-            resultsBatch3.add(resultBatchPurity3);
-            resultsBatch3.add(resultBatchViscosity3);
-            resultsBatch3.add(resultBatchDensity3);
-
-            //Store all QualityTests ResultHydBatch1
-            List<QualityTestResult> resultHydBatch1 = new ArrayList<>();
-            resultHydBatch1.add(resultHydBatchPurity1);
-            resultHydBatch1.add(resultHydBatchDensity1);
-
-
-            //Creating Profiles of a Chemical1
-            ChemicalQualityProfile sulphuricProfile = new ChemicalQualityProfile(chemical,
-                    sulphuricTests);
-
-            //Creating Profiles of a Chemical2
-            ChemicalQualityProfile hydrochloricProfile = new ChemicalQualityProfile(chemical2,
-                    hydrochloricTests);
-
-            Map<String,ChemicalQualityProfile> profileRegistry = new HashMap<>();
-            profileRegistry.put(chemical.getChemicalId(),sulphuricProfile);
-            profileRegistry.put(chemical2.getChemicalId(),hydrochloricProfile);
-
-            QualityControlService service = new QualityControlService();
-
-//            System.out.println("----------------------------------");
-//            System.out.println("Test ID: "+purityTest.getTestId());
-//            System.out.println("Test Name: "+purityTest.getTestName());
-//            System.out.println("Test MinimumAcceptableValue: "+purityTest.getMinimumAcceptableValue());
-//            System.out.println("Test MaximumAcceptableValue: "+purityTest.getMaximumAcceptableValue());
-//            System.out.println("Test Unit: "+purityTest.getUnit());
-
-
-            //Evaluate the batch quality
-            System.out.println("---------------------------------------");
-            evaluateBatchUsingProfile(
-                    batch1, resultsBatch1, profileRegistry, service);
-
-            evaluateBatchUsingProfile(
-                    batch2, resultsBatch2, profileRegistry, service);
-
-            evaluateBatchUsingProfile(
-                    batch3, resultsBatch3, profileRegistry, service);
-
-            evaluateBatchUsingProfile(
-                    hydBatch1, resultHydBatch1, profileRegistry, service);
-
-
-            try{
-                batch2.completeQualityEvaluation(QualityStatus.PASSED);
-            }
-            catch(IllegalStateException e){
-                System.out.println("Cant Update: " + e.getMessage());
-            }
-            System.out.println("Batch2 After: "+batch2.getBatchStatus());
-            System.out.println("Batch3 After: " + batch3.getBatchStatus());
-
-            //Inventory
-            Inventory inventory1 = new Inventory("INV-001",
-                    batch1);
-
-            Inventory inventory2 = new Inventory("INV-002",
-                    batch2);
-
-            Inventory inventory3 = new Inventory("INV-003",
-                    batch3);
-
-//            inventory1.reserveQuantity(new BigDecimal("300"));
-//            System.out.println("-----------------------------------------------");
-//            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
-//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-//            System.out.println("ReservedQuantity: "+inventory1.getReservedQuantity());
-
-//            inventory1.releaseReservedQuantity(new BigDecimal("100"));
-//            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
-//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-//            System.out.println("ReservedQuantity: "+inventory1.getReservedQuantity());
-//
-//            inventory1.releaseReservedQuantity(new BigDecimal("300"));
-//            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
-//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-//            System.out.println("ReservedQuantity: "+inventory1.getReservedQuantity());
-
-//            inventory1.dispatchQuantity(new BigDecimal("200"));
-//            System.out.println("Dispatch Quantity: "+inventory1.getDispatchedQuantity());
-//            System.out.println("Reserve Quantity: "+inventory1.getReservedQuantity());
-//            inventory1.releaseReservedQuantity(new BigDecimal("50"));
-//            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-//            System.out.println("Reserve Quantity: "+inventory1.getReservedQuantity());
-//            try{
-//                inventory1.dispatchQuantity(new BigDecimal("100"));
-//            }catch(IllegalStateException e){
-//                System.out.println(e.getMessage());
-//            }
-            System.out.println("--------------------------------------");
-            System.out.println("Total Quantity: "+inventory1.getTotalQuantity());
-            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-            inventory1.reserveQuantity(new BigDecimal("400"));
-            System.out.println("Reserved Quantity: "+inventory1.getReservedQuantity());
-            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-            inventory1.dispatchQuantity(new BigDecimal("150"));
-            System.out.println("Dispatch Quantity: "+inventory1.getDispatchedQuantity());
-            System.out.println("Reserved Quantity: "+inventory1.getReservedQuantity());
-            inventory1.releaseReservedQuantity(new BigDecimal("100"));
-            System.out.println("Release Quantity: "+inventory1.getReservedQuantity());
-            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-            inventory1.recordDamageFromAvailable(new BigDecimal("50"));
-            System.out.println("Damaged Quantity: "+inventory1.getDamagedQuantity());
-            System.out.println("Available Quantity: "+inventory1.getAvailableQuantity());
-
-            System.out.println("-----------------------------------------------");
-            System.out.println("Total Quantity: "+inventory2.getTotalQuantity());
-            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
-            inventory2.reserveQuantity(new BigDecimal("400"));
-            System.out.println("Reserved Quantity: "+inventory2.getReservedQuantity());
-            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
-            inventory2.dispatchQuantity(new BigDecimal("150"));
-            System.out.println("Dispatch Quantity: "+inventory2.getDispatchedQuantity());
-            System.out.println("Reserved Quantity: "+inventory2.getReservedQuantity());
-            inventory2.releaseReservedQuantity(new BigDecimal("100"));
-            System.out.println("Release Quantity: "+inventory2.getReservedQuantity());
-            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
-            inventory2.recordDamageFromAvailable(new BigDecimal("50"));
-            System.out.println("Damaged Quantity: "+inventory2.getDamagedQuantity());
-            System.out.println("Available Quantity: "+inventory2.getAvailableQuantity());
-
-            System.out.println("--------------------------------------------");
-            System.out.println("Total Quantity: "+inventory3.getTotalQuantity());
-            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
-            inventory3.reserveQuantity(new BigDecimal("400"));
-            System.out.println("Reserved Quantity: "+inventory3.getReservedQuantity());
-            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
-            inventory3.dispatchQuantity(new BigDecimal("150"));
-            System.out.println("Dispatch Quantity: "+inventory3.getDispatchedQuantity());
-            System.out.println("Reserved Quantity: "+inventory3.getReservedQuantity());
-            inventory3.releaseReservedQuantity(new BigDecimal("100"));
-            System.out.println("Release Quantity: "+inventory3.getReservedQuantity());
-            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
-            inventory3.recordDamageFromAvailable(new BigDecimal("50"));
-            System.out.println("Damaged Quantity: "+inventory3.getDamagedQuantity());
-            System.out.println("Available Quantity: "+inventory3.getAvailableQuantity());
-
-
-            Customer customer = new Customer("CUST-001",
-                    "ABC Chemicals",
-                    "9039779122",
-                    "satvik@gmail.com",
-                    "Indore");
-
-            CustomerOrder order1 = new CustomerOrder("ORD-001",
-                    customer,
-                    chemical,
-                    new BigDecimal("500"));
-
-            CustomerOrder order2 = new CustomerOrder("ORD-002",
-                    customer,
-                    chemical2,
-                    new BigDecimal("1500"));
-
-            System.out.println("-----------------------Order Details-----------------------------------");
-            System.out.println("Order Id: "+order1.getOrderId());
-            System.out.println("Customer Name: "+order1.getCustomer().getCustomerName());
-            System.out.println("Chemical Name: "+order1.getChemical().getName());
-            System.out.println("Order Quantity: "+order1.getOrderQuantity());
-            System.out.println("Order Date: "+order1.getOrderDate());
-            System.out.println("Order Status: "+order1.getOrderStatus());
-            System.out.println("Order Name At: "+order1.getCustomerNameAtOrder());
-            System.out.println("Order Contact At: "+order1.getCustomerContactAtOrder());
-            System.out.println("Order Email At: "+order1.getCustomerEmailAtOrder());
-            System.out.println("Order Address At: "+order1.getCustomerAddressAtOrder());
-
-            customer.setContactNumber("9123456780");
-            System.out.println("Customer Current Contact: "+customer.getContactNumber());
-            System.out.println("Order Historical Contact: "+order1.getCustomerContactAtOrder());
-
-//            //Active and Created and also Validated to Validated check
-//            OrderService service1 = new OrderService();
-//            System.out.println(order1.getOrderStatus());
-//            service1.validateOrder(order1);
-//            System.out.println(order1.getOrderStatus());
-//            service1.validateOrder(order1);
-//            System.out.println(order1.getOrderStatus());
-
-            //When Customer is Inactive and null
-            OrderService service2 = new OrderService();
-            System.out.println(order2.getOrderStatus());
-            customer.setCustomerStatus(CustomerStatus.INACTIVE);
-//            try{
-//                service2.validateOrder(order2);
-//            }catch(IllegalStateException e){
-//                System.out.println(e.getMessage());
-//            }
-//            service2.validateOrder(null);
-//            System.out.println(order2.getOrderStatus());
-
-            Reservation reservation1 = new Reservation("RES-001",
-                    order1,
-                    inventory1,
-                    new BigDecimal("500"));
-
-//            System.out.println("-----------------------------------------");
-//            System.out.println(reservation1.getReservationStatus());
-//            reservation1.markAsReleased();
-//            System.out.println(reservation1.getReservationStatus());
-//            reservation1.markAsDispatched();
-//            System.out.println(reservation1.getReservationStatus());
-
-            InMemoryInventoryRepository repo = new InMemoryInventoryRepository();
-            repo.save(inventory1);
-            repo.save(inventory2);
-            repo.save(inventory3);
-
-            for(Inventory inv : repo.findAll()){
-                System.out.println(inv.getInventoryId());
-            }
-            Optional<Inventory> result = repo.findById("INV-001");
-            System.out.println(result.isPresent());
-            System.out.println(result);
-            Optional<Inventory> missing = repo.findById("INV-999");
-            System.out.println(missing.isPresent());
-            System.out.println(missing);
-            System.out.println(repo.existsById("INV-001"));
-            repo.save(inventory1);
-
-
-
-
-
-        }catch(IllegalArgumentException e){
-            System.out.println("Registration Fails " + e.getMessage());
+        System.out.println("========================================");
+        System.out.println("   CHEMICAL BATCH QUALITY MANAGEMENT");
+        System.out.println("========================================");
+
+        Chemical sulphuricAcid = new Chemical("CHEM-001",
+                "Sulphuric Acid",
+                "Litres",
+                365);
+
+        Chemical hydrochloricAcid = new Chemical("CHEM-002",
+                "Hydrochloric Acid",
+                "Litres",
+                180);
+
+        System.out.println("\n========== REGISTERED CHEMICALS ==========");
+
+        System.out.printf(
+                "%-12s | %-22s | %-12s | %-18s%n",
+                "Chemical ID",
+                "Chemical Name",
+                "Unit",
+                "Shelf Life (Days)"
+        );
+
+        System.out.println("---------------------------------------------------------------------");
+
+        printChemical(sulphuricAcid);
+        printChemical(hydrochloricAcid);
+
+        System.out.println("---------------------------------------------------------------------");
+        ProductionBatch sulProductionBatch1 = new ProductionBatch("BATCH-001",
+                sulphuricAcid,
+                LocalDate.of(2026,11,20),
+                new BigDecimal("500"));
+
+        ProductionBatch sulProductionBatch2 = new ProductionBatch("BATCH-002",
+                sulphuricAcid,
+                LocalDate.of(2026,11,22),
+                new BigDecimal("1000"));
+
+        ProductionBatch sulProductionBatch3 = new ProductionBatch("BATCH-003",
+                sulphuricAcid,
+                LocalDate.of(2026,11,24),
+                new BigDecimal("800"));
+
+        ProductionBatch hydProductionBatch1 = new ProductionBatch("BATCH-004",
+                hydrochloricAcid,
+                LocalDate.of(2026,11,21),
+                new BigDecimal("1000"));
+
+        System.out.println("\n========== PRODUCTION BATCH DETAILS ==========");
+
+        System.out.printf(
+                "%-12s | %-20s | %-15s | %-15s | %10s%n",
+                "Batch ID",
+                "Chemical",
+                "Manufactured",
+                "Expiry Date",
+                "Quantity"
+        );
+
+        System.out.println("--------------------------------------------------------------------------------");
+
+        printBatch(sulProductionBatch1);
+        printBatch(sulProductionBatch2);
+        printBatch(sulProductionBatch3);
+        printBatch(hydProductionBatch1);
+
+        System.out.println("--------------------------------------------------------------------------------");
+
+        QualityTest purityTestSulphuric = new QualityTest("TEST-001",
+                "Purity",
+                new BigDecimal("95"),
+                new BigDecimal("100"),
+                "%");
+
+        QualityTest densityTestSulphuric = new QualityTest("TEST-002",
+                "Density",
+                new BigDecimal("1.80"),
+                new BigDecimal("1.85"),
+                "g/cm³");
+
+        QualityTest concentrationTestSulphuric = new QualityTest("TEST-003",
+                "Concentration",
+                new BigDecimal("30"),
+                new BigDecimal("35"),
+                "%");
+
+        QualityTest purityTestHydrochloric = new QualityTest("TEST-004",
+                "Purity",
+                new BigDecimal("30"),
+                new BigDecimal("35"),
+                "%");
+
+        QualityTest densityTestHydrochloric = new QualityTest("TEST-005",
+                "Density",
+                new BigDecimal("1.15"),
+                new BigDecimal("1.20"),
+                "g/cm³");
+
+        List<QualityTest> requiredTestsSulphuric = new ArrayList<>();
+        requiredTestsSulphuric.add(purityTestSulphuric);
+        requiredTestsSulphuric.add(densityTestSulphuric);
+        requiredTestsSulphuric.add(concentrationTestSulphuric);
+
+        List<QualityTest> requiredTestsHydrochloric = new ArrayList<>();
+        requiredTestsHydrochloric.add(purityTestHydrochloric);
+        requiredTestsHydrochloric.add(densityTestHydrochloric);
+
+        ChemicalQualityProfile sulphuricAcidProfile =
+                new ChemicalQualityProfile(
+                        sulphuricAcid,
+                        requiredTestsSulphuric
+                );
+
+        ChemicalQualityProfile hydrochloricAcidProfile =
+                new ChemicalQualityProfile(
+                        hydrochloricAcid,
+                        requiredTestsHydrochloric
+                );
+
+        Map<String, ChemicalQualityProfile> profileRegistry = new HashMap<>();
+
+        profileRegistry.put(
+                sulphuricAcid.getChemicalId(),
+                sulphuricAcidProfile
+        );
+
+        profileRegistry.put(
+                hydrochloricAcid.getChemicalId(),
+                hydrochloricAcidProfile
+        );
+
+        System.out.println("\n========== CHEMICAL QUALITY PROFILE REGISTRY ==========");
+
+        System.out.printf(
+                "%-15s | %-22s | %-15s%n",
+                "Chemical ID",
+                "Chemical Name",
+                "Required Tests"
+        );
+
+        System.out.println("----------------------------------------------------------");
+
+        for (Map.Entry<String, ChemicalQualityProfile> entry : profileRegistry.entrySet()) {
+
+            ChemicalQualityProfile profile = entry.getValue();
+
+            System.out.printf(
+                    "%-15s | %-22s | %-15d%n",
+                    entry.getKey(),
+                    profile.getChemical().getName(),
+                    profile.getRequiredTests().size()
+            );
         }
 
+        System.out.println("----------------------------------------------------------");
 
+        System.out.println("\n========== SULPHURIC ACID QUALITY TESTS ==========");
+
+        printTestHeader();
+
+        printTest(purityTestSulphuric);
+        printTest(densityTestSulphuric);
+        printTest(concentrationTestSulphuric);
+
+        System.out.println("--------------------------------------------------------------------------");
+
+        System.out.println("\n========== HYDROCHLORIC ACID QUALITY TESTS ==========");
+
+        printTestHeader();
+
+        printTest(purityTestHydrochloric);
+        printTest(densityTestHydrochloric);
+
+        System.out.println("--------------------------------------------------------------------------");
+
+        QualityTestResult sulProductionBatch1PurityResult = new QualityTestResult("QTR-001",
+                sulProductionBatch1,
+                purityTestSulphuric,
+                new BigDecimal("98"));
+
+        QualityTestResult sulProductionBatch1DensityResult = new QualityTestResult("QTR-002",
+                sulProductionBatch1,
+                densityTestSulphuric,
+                new BigDecimal("1.82"));
+
+        QualityTestResult sulProductionBatch1ConcentrationResult = new QualityTestResult("QTR-003",
+                sulProductionBatch1,
+                concentrationTestSulphuric,
+                new BigDecimal("33"));
+
+        QualityTestResult sulProductionBatch2PurityResult = new QualityTestResult(
+                "QTR-004",
+                sulProductionBatch2,
+                purityTestSulphuric,
+                new BigDecimal("97")
+        );
+
+        QualityTestResult sulProductionBatch2DensityResult = new QualityTestResult(
+                "QTR-005",
+                sulProductionBatch2,
+                densityTestSulphuric,
+                new BigDecimal("1.83")
+        );
+
+        QualityTestResult sulProductionBatch2ConcentrationResult = new QualityTestResult(
+                "QTR-006",
+                sulProductionBatch2,
+                concentrationTestSulphuric,
+                new BigDecimal("32")
+        );
+
+        QualityTestResult sulProductionBatch3PurityResult = new QualityTestResult(
+                "QTR-007",
+                sulProductionBatch3,
+                purityTestSulphuric,
+                new BigDecimal("92")
+        );
+
+        QualityTestResult sulProductionBatch3DensityResult = new QualityTestResult(
+                "QTR-008",
+                sulProductionBatch3,
+                densityTestSulphuric,
+                new BigDecimal("1.83")
+        );
+
+        QualityTestResult sulProductionBatch3ConcentrationResult = new QualityTestResult(
+                "QTR-009",
+                sulProductionBatch3,
+                concentrationTestSulphuric,
+                new BigDecimal("32")
+        );
+
+        QualityTestResult hydProductionBatch1PurityResult = new QualityTestResult(
+                "QTR-010",
+                hydProductionBatch1,
+                purityTestHydrochloric,
+                new BigDecimal("33")
+        );
+
+        QualityTestResult hydProductionBatch1DensityResult = new QualityTestResult(
+                "QTR-011",
+                hydProductionBatch1,
+                densityTestHydrochloric,
+                new BigDecimal("1.22")
+        );
+
+        System.out.println("\n========== QUALITY TEST RESULTS ==========");
+
+        System.out.printf(
+                "%-12s | %-12s | %-20s | %-18s | %12s | %-10s%n",
+                "Result ID",
+                "Batch ID",
+                "Chemical",
+                "Test Name",
+                "Actual Value",
+                "Result"
+        );
+
+        System.out.println("------------------------------------------------------------------------------------------------");
+
+// BATCH-001: Sulphuric Acid
+        System.out.println("\n--- BATCH-001 ---");
+        printQualityResult(sulProductionBatch1PurityResult);
+        printQualityResult(sulProductionBatch1DensityResult);
+        printQualityResult(sulProductionBatch1ConcentrationResult);
+
+// BATCH-002: Sulphuric Acid
+        System.out.println("\n--- BATCH-002 ---");
+        printQualityResult(sulProductionBatch2PurityResult);
+        printQualityResult(sulProductionBatch2DensityResult);
+        printQualityResult(sulProductionBatch2ConcentrationResult);
+
+// BATCH-003: Sulphuric Acid
+        System.out.println("\n--- BATCH-003 ---");
+        printQualityResult(sulProductionBatch3PurityResult);
+        printQualityResult(sulProductionBatch3DensityResult);
+        printQualityResult(sulProductionBatch3ConcentrationResult);
+
+// BATCH-004: Hydrochloric Acid
+        System.out.println("\n--- BATCH-004 ---");
+        printQualityResult(hydProductionBatch1PurityResult);
+        printQualityResult(hydProductionBatch1DensityResult);
+
+        System.out.println("------------------------------------------------------------------------------------------------");
+
+        List<QualityTestResult> allQualityResults = new ArrayList<>();
+
+        // BATCH-001
+        allQualityResults.add(sulProductionBatch1PurityResult);
+        allQualityResults.add(sulProductionBatch1DensityResult);
+        allQualityResults.add(sulProductionBatch1ConcentrationResult);
+
+        // BATCH-002
+        allQualityResults.add(sulProductionBatch2PurityResult);
+        allQualityResults.add(sulProductionBatch2DensityResult);
+        allQualityResults.add(sulProductionBatch2ConcentrationResult);
+
+        // BATCH-003
+        allQualityResults.add(sulProductionBatch3PurityResult);
+        allQualityResults.add(sulProductionBatch3DensityResult);
+        allQualityResults.add(sulProductionBatch3ConcentrationResult);
+
+        // BATCH-004
+        allQualityResults.add(hydProductionBatch1PurityResult);
+        allQualityResults.add(hydProductionBatch1DensityResult);
+
+        QualityControlService qualityControlService = new QualityControlService();
+
+        qualityControlService.evaluateBatchUsingProfile(
+                sulProductionBatch1,
+                allQualityResults,
+                profileRegistry
+        );
+
+        qualityControlService.evaluateBatchUsingProfile(
+                sulProductionBatch2,
+                allQualityResults,
+                profileRegistry
+        );
+
+        qualityControlService.evaluateBatchUsingProfile(
+                sulProductionBatch3,
+                allQualityResults,
+                profileRegistry
+        );
+
+        qualityControlService.evaluateBatchUsingProfile(
+                hydProductionBatch1,
+                allQualityResults,
+                profileRegistry
+        );
+        System.out.println("\n========== FINAL BATCH QUALITY STATUS ==========");
+
+        System.out.printf(
+                "%-15s | %-22s | %-20s%n",
+                "Batch ID",
+                "Chemical",
+                "Batch Status"
+        );
+
+        System.out.println("---------------------------------------------------------------");
+
+        printBatchStatus(sulProductionBatch1);
+        printBatchStatus(sulProductionBatch2);
+        printBatchStatus(sulProductionBatch3);
+        printBatchStatus(hydProductionBatch1);
+
+        System.out.println("---------------------------------------------------------------");
+
+
+        // Initialize repositories
+        InventoryRepository inventoryRepository =
+                new InMemoryInventoryRepository();
+
+        ReservationRepository reservationRepository =
+                new InMemoryReservationRepository();
+
+        // Initialize Inventory Service
+        InventoryService inventoryService =
+                new InventoryService(inventoryRepository, reservationRepository);
+
+        // Create inventory for approved batches
+        Inventory inventory1 =
+                new Inventory("INV-001", sulProductionBatch1);
+
+        Inventory inventory2 =
+                new Inventory("INV-002", sulProductionBatch2);
+
+        // Save inventory
+        inventoryRepository.save(inventory1);
+        inventoryRepository.save(inventory2);
+
+        printInventoryDetails(inventoryRepository, "INITIAL INVENTORY");
+        printInventoryDetails(inventoryRepository);
+
+        // Create customer
+        Customer customer1 = new Customer(
+                "CUST-001",
+                "Rahul Sharma",
+                "9876543210",
+                "rahul@gmail.com",
+                "Indore, Madhya Pradesh"
+        );
+
+        // Create customer order
+        CustomerOrder order1 = new CustomerOrder(
+                "ORD-001",
+                customer1,
+                sulphuricAcid,
+                new BigDecimal("700")
+        );
+
+        // Initialize OrderService
+        OrderService orderService = new OrderService(inventoryService);
+        System.out.println("\n========== CUSTOMER ORDER DETAILS ==========");
+
+        System.out.println("Order ID       : " + order1.getOrderId());
+        System.out.println("Customer       : " + order1.getCustomerNameAtOrder());
+        System.out.println("Chemical       : " + order1.getChemical().getName());
+        System.out.println("Order Quantity : " + order1.getOrderQuantity());
+        System.out.println("Order Status   : " + order1.getOrderStatus());
+
+
+        System.out.println("-------------------------------------------------------------------------------------------------------------------------------");
+        // Validate order
+        orderService.validateOrder(order1);
+
+        System.out.println("\nOrder validated successfully.");
+
+        // Reserve inventory
+        boolean reserved = orderService.reserveOrder(order1);
+
+        if (reserved) {
+            System.out.println("Inventory reserved successfully.");
+        } else {
+            System.out.println("Insufficient inventory. Order rejected.");
+        }
+
+        System.out.println("Final Order Status: " + order1.getOrderStatus());
+
+        printInventoryDetails(inventoryRepository, "INVENTORY AFTER RESERVATION");
+        printInventoryDetails(inventoryRepository);
+
+        // Dispatch reserved inventory
+        System.out.println("\n========== ORDER DISPATCH ==========");
+
+        orderService.dispatchOrder(order1);
+
+        System.out.println("Order ID     : " + order1.getOrderId());
+        System.out.println("Order Status : " + order1.getOrderStatus());
+
+        // Display inventory after dispatch
+        printInventoryDetails(inventoryRepository, "INVENTORY AFTER DISPATCH");
+        printInventoryDetails(inventoryRepository);
+
+        // Create second customer order
+        CustomerOrder order2 = new CustomerOrder(
+                "ORD-002",
+                customer1,
+                sulphuricAcid,
+                new BigDecimal("300")
+        );
+        System.out.println("\n========== SECOND CUSTOMER ORDER ==========");
+
+        System.out.println("Order ID       : " + order2.getOrderId());
+        System.out.println("Customer       : " + order2.getCustomerNameAtOrder());
+        System.out.println("Chemical       : " + order2.getChemical().getName());
+        System.out.println("Order Quantity : " + order2.getOrderQuantity());
+        System.out.println("Order Status   : " + order2.getOrderStatus());
+
+        orderService.validateOrder(order2);
+
+        boolean secondOrderReserved = orderService.reserveOrder(order2);
+
+        if (secondOrderReserved) {
+            System.out.println("Inventory reserved successfully.");
+        } else {
+            System.out.println("Insufficient inventory.");
+        }
+
+        System.out.println("Final Order Status: " + order2.getOrderStatus());
+
+        printInventoryDetails(
+                inventoryRepository,
+                "INVENTORY AFTER SECOND RESERVATION"
+        );
+        printInventoryDetails(inventoryRepository);
+        System.out.println("\n========== ORDER CANCELLATION ==========");
+
+        orderService.cancelOrder(order2);
+
+        System.out.println("Order ID     : " + order2.getOrderId());
+        System.out.println("Order Status : " + order2.getOrderStatus());
+
+        printInventoryDetails(
+                inventoryRepository,
+                "INVENTORY AFTER CANCELLATION"
+        );
+        printInventoryDetails(inventoryRepository);
+
+        // Create third customer order
+        CustomerOrder order3 = new CustomerOrder(
+                "ORD-003",
+                customer1,
+                sulphuricAcid,
+                new BigDecimal("2000")
+        );
+
+        System.out.println("\n========== THIRD CUSTOMER ORDER ==========");
+
+        System.out.println("Order ID       : " + order3.getOrderId());
+        System.out.println("Customer       : " + order3.getCustomerNameAtOrder());
+        System.out.println("Chemical       : " + order3.getChemical().getName());
+        System.out.println("Order Quantity : " + order3.getOrderQuantity());
+        System.out.println("Order Status   : " + order3.getOrderStatus());
+
+// Validate order
+        orderService.validateOrder(order3);
+
+        System.out.println("\nOrder validated successfully.");
+
+// Attempt inventory reservation
+        boolean thirdOrderReserved = orderService.reserveOrder(order3);
+
+        if (thirdOrderReserved) {
+            System.out.println("Inventory reserved successfully.");
+        } else {
+            System.out.println("Insufficient inventory. Order rejected.");
+        }
+
+        System.out.println("Final Order Status: " + order3.getOrderStatus());
+
+        // Display inventory after failed reservation
+        printInventoryDetails(
+                inventoryRepository,
+                "INVENTORY AFTER REJECTED ORDER"
+        );
+        printInventoryDetails(inventoryRepository);
+
+        // Create second customer
+        Customer customer2 = new Customer(
+                "CUST-002",
+                "Amit Verma",
+                "9876543211",
+                "amit@gmail.com",
+                "Indore, Madhya Pradesh"
+        );
+
+        CustomerOrder order4 = new CustomerOrder(
+                "ORD-004",
+                customer2,
+                sulphuricAcid,
+                new BigDecimal("200")
+        );
+
+        customer2.setCustomerStatus(CustomerStatus.INACTIVE);
+
+        System.out.println("\n========== CUSTOMER STATUS ==========");
+        System.out.println("Customer ID     : " + customer2.getCustomerId());
+        System.out.println("Customer Name   : " + customer2.getCustomerName());
+        System.out.println("Customer Status : " + customer2.getCustomerStatus());
+
+        System.out.println("\n========== INACTIVE CUSTOMER ORDER TEST ==========");
+
+        try {
+            orderService.validateOrder(order4);
+
+            System.out.println("Order validated successfully.");
+
+        } catch (IllegalStateException e) {
+            System.out.println("Order validation failed: " + e.getMessage());
+        }
+
+        System.out.println("Order ID     : " + order4.getOrderId());
+        System.out.println("Order Status : " + order4.getOrderStatus());
+
+        printInventoryDetails(
+                inventoryRepository,
+                "INVENTORY AFTER INACTIVE CUSTOMER TEST"
+        );
+        printInventoryDetails(inventoryRepository);
+
+        System.out.println("\n========== INACTIVE CUSTOMER ORDER CREATION TEST ==========");
+
+        try {
+            CustomerOrder order5 = new CustomerOrder(
+                    "ORD-005",
+                    customer2,
+                    sulphuricAcid,
+                    new BigDecimal("200")
+            );
+
+            System.out.println("Order created: " + order5.getOrderId());
+
+        } catch (IllegalStateException e) {
+            System.out.println("Order creation failed: " + e.getMessage());
+        }
     }
-    private static void evaluateBatchUsingProfile(
-            ProductionBatch batch,
-            List<QualityTestResult> results,
-            Map<String, ChemicalQualityProfile> profileRegistry,
-            QualityControlService service) {
-        // Get chemical ID from the batch
-        String chemicalId = batch.getChemical().getChemicalId();
-        // Retrieve the correct chemical profile
-        ChemicalQualityProfile profile = profileRegistry.get(chemicalId);
-        // Check whether profile exists
-        if (profile == null) {
-            throw new IllegalStateException(
-                    "No quality profile found for: " + chemicalId);
+
+
+
+    private static void printChemical(Chemical chemical) {
+        System.out.printf(
+                "%-12s | %-22s | %-12s | %-18d%n",
+                chemical.getChemicalId(),
+                chemical.getName(),
+                chemical.getUnit(),
+                chemical.getShelfLifeDays()
+        );
+    }
+
+    private static void printBatch(ProductionBatch batch) {
+        System.out.printf(
+                "%-12s | %-20s | %-15s | %-15s | %10s%n",
+                batch.getBatchNumber(),
+                batch.getChemical().getName(),
+                batch.getManufacturingDate(),
+                batch.getExpiryDate(),
+                batch.getQuantity().toPlainString()
+        );
+    }
+
+    private static void printTest(QualityTest qualityTest) {
+        System.out.printf(
+                "%-12s | %-18s | %10s | %10s | %-10s%n",
+                qualityTest.getTestId(),
+                qualityTest.getTestName(),
+                qualityTest.getMinimumAcceptableValue(),
+                qualityTest.getMaximumAcceptableValue(),
+                qualityTest.getUnit()
+        );
+    }
+    private static void printTestHeader() {
+        System.out.printf(
+                "%-12s | %-18s | %10s | %10s | %-10s%n",
+                "Test ID",
+                "Test Name",
+                "Minimum",
+                "Maximum",
+                "Unit"
+        );
+
+        System.out.println("--------------------------------------------------------------------------");
+    }
+
+    private static void printQualityResult(QualityTestResult result) {
+        System.out.printf(
+                "%-12s | %-12s | %-20s | %-18s | %12s | %-10s%n",
+                result.getResultId(),
+                result.getBatch().getBatchNumber(),
+                result.getBatch().getChemical().getName(),
+                result.getQualityTest().getTestName(),
+                result.getMeasuredValue(),
+                result.isPassed() ? "PASSED" : "FAILED"
+        );
+    }
+    private static void printBatchStatus(ProductionBatch batch) {
+        System.out.printf(
+                "%-15s | %-22s | %-20s%n",
+                batch.getBatchNumber(),
+                batch.getChemical().getName(),
+                batch.getBatchStatus()
+        );
+    }
+    private static void printInventoryDetails(InventoryRepository inventoryRepository) {
+
+        System.out.printf(
+                "%-12s | %-12s | %-20s | %12s | %12s | %12s | %12s | %12s%n",
+                "Inventory ID",
+                "Batch ID",
+                "Chemical",
+                "Total",
+                "Available",
+                "Reserved",
+                "Dispatched",
+                "Damaged"
+        );
+
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------");
+
+        for (Inventory inventory : inventoryRepository.findAll()) {
+
+            System.out.printf(
+                    "%-12s | %-12s | %-20s | %12s | %12s | %12s | %12s | %12s%n",
+                    inventory.getInventoryId(),
+                    inventory.getBatch().getBatchNumber(),
+                    inventory.getBatch().getChemical().getName(),
+                    inventory.getTotalQuantity(),
+                    inventory.getAvailableQuantity(),
+                    inventory.getReservedQuantity(),
+                    inventory.getDispatchedQuantity(),
+                    inventory.getDamagedQuantity()
+            );
         }
-        // Get required tests from profile
-        List<QualityTest> requiredTests = profile.getRequiredTests();
-        // Evaluate batch
-        service.evaluateBatch(batch, requiredTests, results);
-        // Display result
-        System.out.println(
-                batch.getBatchNumber() + ": " + batch.getBatchStatus());
+
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------");
+    }
+    private static void printInventoryDetails(
+            InventoryRepository inventoryRepository,
+            String heading) {
+
+        System.out.println("\n========== " + heading + " ==========");
+
+        // Keep the remaining table-printing code unchanged.
     }
 }

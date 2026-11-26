@@ -7,7 +7,6 @@ public class Chemical {
     private int shelfLifeDays;
 
     public Chemical(String chemicalId,String name,String unit,int shelfLifeDays){
-
         if(chemicalId == null || chemicalId.isBlank()){
             throw new IllegalArgumentException("Chemical ID cannot be empty.");
         }
