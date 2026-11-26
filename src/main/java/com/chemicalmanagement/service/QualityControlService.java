@@ -1,0 +1,95 @@
+package com.chemicalmanagement.service;
+
+import com.chemicalmanagement.domain.*;
+
+import java.util.List;
+import java.util.Map;
+
+public class QualityControlService {
+    public void evaluateBatch(ProductionBatch batch,
+                              List<QualityTest>  requiredTests,
+                              List<QualityTestResult> results){
+
+        // Validate the inputs
+        if(batch == null){
+            throw new IllegalArgumentException("Production Batch cannot be null");
+        }
+
+        if(requiredTests == null || requiredTests.isEmpty()){
+            throw new IllegalArgumentException("Required Tests cannot be empty or null ");
+        }
+
+        if(results == null){
+            throw new IllegalArgumentException("Results cannot be null.");
+        }
+
+        for(QualityTest test : requiredTests){
+            if(test == null){
+                throw new IllegalArgumentException("Required Test cannot be null.");
+            }
+        }
+
+        for(QualityTestResult result : results){
+            if(result == null){
+                throw new IllegalArgumentException("Quality test result cannot be null");
+            }
+        }
+        // Track test failures and completion
+        QualityStatus evaluationOutcome;
+        boolean hasFailedTest = false;
+        boolean allTestsCompleted = true;
+
+        // Check each required test
+        for(QualityTest requiredTest : requiredTests){
+            boolean resultFound = false;
+            for(QualityTestResult result : results){
+                // Find the result for this batch and test
+                if(result.getBatch().getBatchNumber().equals(batch.getBatchNumber())
+                && (result.getQualityTest().getTestId().equals(requiredTest.getTestId()))){
+                    resultFound = true;
+                    // Record if the test failed
+                    if(!result.isPassed()){
+                        hasFailedTest = true;
+                    }
+                    break;
+                }
+            }
+            // Mark the batch as incomplete if a result is missing
+            if(!resultFound){
+                allTestsCompleted = false;
+            }
+        }
+        if(hasFailedTest){
+            evaluationOutcome = QualityStatus.FAILED;
+        }else if(!allTestsCompleted){
+            evaluationOutcome = QualityStatus.PENDING;
+        }else{
+            evaluationOutcome = QualityStatus.PASSED;
+        }
+        batch.completeQualityEvaluation(evaluationOutcome);
+    }
+
+    public void evaluateBatchUsingProfile(ProductionBatch batch,
+                                          List<QualityTestResult> results,
+                                          Map<String, ChemicalQualityProfile> profileRegistry){
+        if (batch == null) {
+            throw new IllegalArgumentException("Production batch cannot be null");
+        }
+
+        if (results == null) {
+            throw new IllegalArgumentException("Results cannot be null");
+        }
+
+        if (profileRegistry == null) {
+            throw new IllegalArgumentException("Profile registry cannot be null");
+        }
+
+        String chemicalId = batch.getChemical().getChemicalId();
+        ChemicalQualityProfile profile = profileRegistry.get(chemicalId);
+        if(profile == null){
+            throw new IllegalStateException("No quality profile found for chemical: " + chemicalId);
+        }
+        List<QualityTest> requiredTests = profile.getRequiredTests();
+        evaluateBatch(batch,requiredTests,results);
+    }
+}
