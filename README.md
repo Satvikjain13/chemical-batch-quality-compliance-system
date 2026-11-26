@@ -1,140 +1,204 @@
 # Chemical Batch Quality & Compliance Management System
 
-A console-based **Core Java** project for modelling chemical
-manufacturing batches, quality checks, inventory movements, customers,
-orders and reservation records.
+A console-based **Core Java application** for managing chemical manufacturing batches, quality control, inventory movements, customer orders and reservation records.
 
-> **Current status:** Domain, quality, inventory, customer/order,
-> reservation and in-memory repository components have been implemented.
-> Automated testing is in progress. `InventoryService`, FEFO allocation
-> and cancellation orchestration have **not yet been implemented**.
+**Current status:** The core business workflow has been implemented, including domain models, quality evaluation, inventory management, FEFO allocation, multi-batch reservations, order processing, cancellation, dispatch and in-memory repositories. The project includes automated unit tests using JUnit 5.
 
-## Project scope
+## Project Overview
 
-The application models this workflow:
+The application models a chemical manufacturing and inventory management workflow:
 
-1.  Define a chemical and its shelf life.
-2.  Create production batches for that chemical.
-3.  Define required quality specifications.
-4.  Record batch-specific quality measurements.
-5.  Evaluate batches as `PASSED`, `FAILED` or `PENDING`.
-6.  Track approved batch stock through inventory quantity buckets.
-7.  Create customers and customer orders.
-8.  Validate orders.
-9.  Store reservation records using in-memory repositories.
+1. Define chemicals and their shelf-life requirements.
+2. Create production batches for chemicals.
+3. Define quality specifications for each chemical.
+4. Record batch-specific quality measurements.
+5. Evaluate batch quality against required specifications.
+6. Approve, quarantine or mark batches as quality pending.
+7. Create inventory for approved production batches.
+8. Track available, reserved, dispatched and damaged quantities.
+9. Register customers and create customer orders.
+10. Validate customer orders.
+11. Allocate inventory using FEFO (First-Expired, First-Out).
+12. Reserve inventory across multiple production batches.
+13. Cancel orders and release reserved quantities.
+14. Dispatch reserved orders.
+15. Handle failures through inventory and reservation rollback mechanisms.
 
-## Implemented components
+## Implemented Components
 
-### Domain model
+### 1. Domain Model
 
--   `Chemical`
--   `ProductionBatch`
--   `QualityTest`
--   `QualityTestResult`
--   `ChemicalQualityProfile`
--   `Inventory`
--   `Customer`
--   `CustomerOrder`
--   `Reservation`
+- `Chemical`
+- `ProductionBatch`
+- `QualityTest`
+- `QualityTestResult`
+- `ChemicalQualityProfile`
+- `Inventory`
+- `Customer`
+- `CustomerOrder`
+- `Reservation`
 
-### Services
+### 2. Services
 
--   `QualityControlService`
--   `OrderService`
+- `QualityControlService` – Evaluates batch quality against required specifications.
+- `InventoryService` – Manages inventory eligibility, FEFO allocation, reservations, releases, dispatch and rollback.
+- `OrderService` – Coordinates order validation, reservation, cancellation and dispatch.
 
-### Repositories
+### 3. Repository Layer
 
--   `InventoryRepository`
--   `InMemoryInventoryRepository`
--   `ReservationRepository`
--   `InMemoryReservationRepository`
+Repository abstractions and in-memory implementations:
 
-### Enums
+- `InventoryRepository`
+- `InMemoryInventoryRepository`
+- `ReservationRepository`
+- `InMemoryReservationRepository`
 
--   `QualityStatus`
--   `BatchStatus`
--   `CustomerStatus`
--   `OrderStatus`
--   `ReservationStatus`
+### 4. Enums
 
-## Technology
+- `QualityStatus`
+- `BatchStatus`
+- `CustomerStatus`
+- `OrderStatus`
+- `ReservationStatus`
 
--   Java (project environment: Java 21)
--   Maven
--   JUnit 5
--   `BigDecimal` for precise decimal quantities and quality measurements
--   `LocalDate` / `LocalDateTime` for date and timestamp handling
--   Java collections for current in-memory storage
+## Key Business Rules
 
-## Quality evaluation rules
+### Quality Control
 
--   If any required test fails, the overall quality outcome is `FAILED`.
--   If no test fails but at least one required result is missing, the
-    outcome is `PENDING`.
--   If every required test has a passing result, the outcome is
-    `PASSED`.
--   A failed batch is quarantined; a pending batch remains in
-    quality-pending status; a passed batch is approved.
+- If any required quality test fails, the overall quality outcome is `FAILED`.
+- If no test fails but one or more required results are missing, the outcome is `PENDING`.
+- If every required test passes, the outcome is `PASSED`.
+- Failed batches are moved to `QUARANTINED` status.
+- Pending batches remain in `QUALITY_PENDING` status.
+- Passed batches become `APPROVED`.
 
-## Inventory model
+### Inventory Management
 
-Inventory tracks total, available, reserved, dispatched and damaged
-quantities.
+Inventory tracks five quantity values:
 
-The quantity invariant is:
+- Total quantity
+- Available quantity
+- Reserved quantity
+- Dispatched quantity
+- Damaged quantity
 
-`total = available + reserved + dispatched + damaged`
+The inventory quantity invariant is:
 
-## Current work / not yet implemented
+`totalQuantity = availableQuantity + reservedQuantity + dispatchedQuantity + damagedQuantity`
 
--   `InventoryService`
--   FEFO (First-Expired, First-Out) inventory allocation
--   Multi-batch reservation orchestration and rollback
--   Reservation cancellation and release orchestration
--   Database persistence, REST APIs, authentication and concurrency
+Inventory can only be created for approved production batches.
 
-These are planned features, not completed functionality.
+### FEFO Allocation
 
-## Build and test
+The system uses **First-Expired, First-Out (FEFO)** to allocate eligible inventory.
 
-Run the full automated test suite:
+- Inventory is filtered by chemical.
+- Only approved batches are eligible.
+- Expired batches are excluded.
+- Batches with no available quantity are excluded.
+- Eligible batches are sorted by earliest expiry date.
+- Orders can reserve quantities across multiple batches.
 
-``` bash
+### Order Management
+
+The order lifecycle supports:
+
+`CREATED → VALIDATED → RESERVED → DISPATCHED`
+
+Additional transitions include:
+
+- `CREATED → CANCELLED`
+- `VALIDATED → CANCELLED`
+- `RESERVED → CANCELLED`
+- `CREATED / VALIDATED → REJECTED`
+
+Business rules prevent inactive customers from placing or validating orders.
+
+### Reservation Management
+
+- Reservations are created against specific inventory records.
+- Multiple reservations can be created for a single order.
+- Cancelling a reserved order releases its reserved quantities back to available inventory.
+- Dispatching an order moves reserved quantities into dispatched quantities.
+- Rollback mechanisms restore inventory quantities and reservation states when operations fail.
+
+## Technology Stack
+
+| Technology | Purpose |
+|---|---|
+| Java 21 | Core application development |
+| Maven | Dependency and build management |
+| JUnit 5 | Unit testing |
+| BigDecimal | Precise quantity and measurement calculations |
+| LocalDate / LocalDateTime | Date and time handling |
+| Java Collections | In-memory data storage |
+| Git and GitHub | Version control |
+
+## Testing
+
+The project uses JUnit 5 to test domain models, business rules, services and repository implementations.
+
+The latest complete Maven test execution reported:
+
+- **339 tests executed**
+- **0 failures**
+- **0 errors**
+- **0 skipped**
+- **BUILD SUCCESS**
+
+Run the complete test suite:
+
+```bash
 mvn clean test
 ```
 
-Compile without running tests:
+Compile the application:
 
-``` bash
+```bash
 mvn clean compile
 ```
 
-Package the project:
+Package the application:
 
-``` bash
+```bash
 mvn package
 ```
 
-## Project documentation
+## Project Documentation
 
-See
-[`Chemical_Batch_Quality_System_Documentation_v1.1.md`](docs/Chemical_Batch_Quality_System_Documentation_v1.1.md)
-for the detailed class reference, workflows, business rules, testing
-progress and implementation tracker.
+See [Technical Project Documentation v2.0](docs/Chemical_Batch_Quality_System_Documentation_v2.0.md) for the detailed architecture, domain model, business rules, workflows and testing information.
 
-The matching Word document is maintained as a companion project
-document.
+[Download the Word documentation](docs/Chemical_Batch_Quality_System_Documentation_v2.0.docx).
+It contains the class reference, workflows, business rules, testing details and implementation information.
 
-## Learning / engineering focus
+A companion Word document is also maintained for detailed project documentation.
 
--   Object-oriented design and encapsulation
--   Composition and object references
--   Enums and controlled state transitions
--   Exception-based validation
--   `BigDecimal` and date/time APIs
--   Maven and JUnit 5
--   Repository abstractions and in-memory implementations
--   Business-rule testing and service-layer orchestration
+## Learning and Engineering Focus
 
-This is an educational Core Java application and is **not represented as
-production-ready software**.
+This project demonstrates practical implementation of:
+
+- Object-oriented programming and encapsulation
+- Composition and object references
+- Enum-based state management
+- Business validation and exception handling
+- BigDecimal and Java date/time APIs
+- Repository design and abstraction
+- Service-layer orchestration
+- FEFO inventory allocation
+- Multi-batch inventory reservation
+- Transaction-like rollback mechanisms
+- Maven project management
+- JUnit 5 unit testing
+
+## Future Enhancements
+
+The current application uses console-based interaction and in-memory repositories. Potential future enhancements include:
+
+- MySQL database persistence
+- Spring Boot REST APIs
+- Authentication and role-based authorization
+- Transaction management using database transactions
+- Concurrent inventory reservation handling
+- Web-based user interface
+
+**Project scope:** This is an educational Core Java application demonstrating domain modelling, business logic, service orchestration and automated testing. It is not represented as production-ready enterprise software.
